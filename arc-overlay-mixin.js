@@ -1,8 +1,8 @@
-import {ArcFitMixin} from '@advanced-rest-client/arc-fit-mixin/arc-fit-mixin.js';
-import {ArcResizableMixin} from '@advanced-rest-client/arc-resizable-mixin/arc-resizable-mixin.js';
-import {ArcFocusablesHelper} from './arc-focusables-helper.js';
-import {ArcOverlayManager} from './arc-overlay-manager.js';
-import {pushScrollLock, removeScrollLock} from './arc-scroll-manager.js';
+import { ArcFitMixin } from '@advanced-rest-client/arc-fit-mixin/arc-fit-mixin.js';
+import { ArcResizableMixin } from '@advanced-rest-client/arc-resizable-mixin/arc-resizable-mixin.js';
+import { ArcFocusablesHelper } from './arc-focusables-helper.js';
+import { ArcOverlayManager } from './arc-overlay-manager.js';
+import { pushScrollLock, removeScrollLock } from './arc-scroll-manager.js';
 
 /**
  * This mixin is a port of [IronOverlayBehavior](https://github.com/PolymerElements/iron-overlay-behavior)

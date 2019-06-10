@@ -12,7 +12,7 @@ found at http://polymer.github.io/PATENTS.txt
  * Used to calculate the scroll direction during touch events.
  * @type {!Object}
  */
-let lastTouchPosition = {pageX: 0, pageY: 0};
+let lastTouchPosition = { pageX: 0, pageY: 0 };
 /**
  * Used to avoid computing event.path and filter scrollable nodes (better perf).
  * @type {?EventTarget}
@@ -57,7 +57,7 @@ export let _unlockedElementCache = null;
  *
  * @return {!Node|undefined}
  */
-export {currentLockingElement};
+export { currentLockingElement };
 
 export function _hasCachedLockedElement(element) {
   return _lockedElementCache.indexOf(element) > -1;
@@ -157,7 +157,7 @@ export function _lockScrollInteractions() {
   for (let i = 0, l = scrollEvents.length; i < l; i++) {
     // NOTE: browsers that don't support objects as third arg will
     // interpret it as boolean, hence useCapture = true in this case.
-    document.addEventListener(scrollEvents[i], _boundScrollHandler, {capture: true, passive: false});
+    document.addEventListener(scrollEvents[i], _boundScrollHandler, { capture: true, passive: false });
   }
 }
 
@@ -165,7 +165,7 @@ export function _unlockScrollInteractions() {
   for (let i = 0, l = scrollEvents.length; i < l; i++) {
     // NOTE: browsers that don't support objects as third arg will
     // interpret it as boolean, hence useCapture = true in this case.
-    document.removeEventListener(scrollEvents[i], _boundScrollHandler, {capture: true, passive: false});
+    document.removeEventListener(scrollEvents[i], _boundScrollHandler, { capture: true, passive: false });
   }
 }
 
@@ -226,7 +226,7 @@ export function removeScrollLock(element) {
 /**
  * @package
  */
-export {_boundScrollHandler};
+export { _boundScrollHandler };
 
 /**
  * Returns true if the event causes scroll outside the current locking
@@ -338,7 +338,7 @@ export function _getScrollingNode(nodes, deltaX, deltaY) {
  * @package
  */
 export function _getScrollInfo(event) {
-  const info = {deltaX: event.deltaX, deltaY: event.deltaY};
+  const info = { deltaX: event.deltaX, deltaY: event.deltaY };
   // Already available.
   if ('deltaX' in event) {
     // do nothing, values are already good.

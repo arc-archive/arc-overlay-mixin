@@ -9,5 +9,5 @@ part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
 import './arc-overlay-backdrop.js';
-import {ArcOverlayManager as Manager} from './ArcOverlayManager.js';
+import { ArcOverlayManager as Manager } from './ArcOverlayManager.js';
 export const ArcOverlayManager = new Manager();
