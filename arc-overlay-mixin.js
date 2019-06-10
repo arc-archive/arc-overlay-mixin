@@ -56,7 +56,7 @@ import {pushScrollLock, removeScrollLock} from './arc-scroll-manager.js';
  *
  * ```javascript
  * import { LitElement } from 'lit-element';
- * import { ArcOverlayMixin } from '@advanced-rest-client/arc-overlay-mixin.js';
+ * import { ArcOverlayMixin } from '@advanced-rest-client/arc-overlay-mixin/arc-overlay-mixin.js';
  *
  * class ArcOverlayImpl extends ArcOverlayMixin(LitElement) {
  *  ...
