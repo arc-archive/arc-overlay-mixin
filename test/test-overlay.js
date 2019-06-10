@@ -24,11 +24,9 @@ class TestOverlay extends ArcOverlayMixin(LitElement) {
   }
 
   static get properties() {
-    const top = super.properties || {};
-    const props = {
+    return {
       _animated: { type: Boolean, reflect: true, attribute: 'animated' }
     };
-    return Object.assign({}, top, props);
   }
 
   get animated() {

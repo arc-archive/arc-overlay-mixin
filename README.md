@@ -62,17 +62,12 @@ import { ArcOverlayMixin } from '@advanced-rest-client/arc-overlay-mixin.js';
 
 class ArcOverlayImpl extends ArcOverlayMixin(LitElement) {
   static get properties() {
-    const top = super.properties || {};
-    const props = {
+    return {
       myProp: { type: String }
-    }
-    return Object.assign({}, top, props);
+    };
   }
 }
 ```
-
-Note, You need to include properties from the mixin manually as simple class
-extension overrides `properties`.
 
 ## Testing
 

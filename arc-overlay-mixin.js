@@ -69,8 +69,7 @@ import {pushScrollLock, removeScrollLock} from './arc-scroll-manager.js';
  */
 export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResizableMixin(superClass)) {
   static get properties() {
-    const top = super.properties || {};
-    const props = {
+    return {
       /**
        * True if the overlay is currently displayed.
        */
@@ -137,7 +136,6 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
        */
       _focusedChild: { type: Object }
     };
-    return Object.assign({}, top, props);
   }
   /**
    * True if the overlay is currently displayed.
