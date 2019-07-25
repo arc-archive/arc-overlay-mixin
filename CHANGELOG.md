@@ -48,3 +48,18 @@
 
 
 
+## [1.0.2](https://github.com/advanced-rest-client/arc-overlay-mixin/compare/1.0.0...1.0.2) (2019-07-25)
+
+
+### Bug Fixes
+
+* fixing linter errors ([7e7a986](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/7e7a986))
+* fixing npm audit errors ([10ffbd2](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/10ffbd2))
+
+
+### Features
+
+* adding types ([03ff832](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/03ff832))
+
+
+
