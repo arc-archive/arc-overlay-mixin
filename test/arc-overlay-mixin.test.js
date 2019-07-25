@@ -1,7 +1,7 @@
-import {fixture, assert, nextFrame} from '@open-wc/testing';
+import { fixture, assert, nextFrame } from '@open-wc/testing';
 import sinon from 'sinon/pkg/sinon-esm.js';
-import {pressAndReleaseKeyOn, tap, focus} from '@polymer/iron-test-helpers/mock-interactions.js';
-import {ArcOverlayManager} from '../arc-overlay-manager.js';
+import { pressAndReleaseKeyOn, tap, focus } from '@polymer/iron-test-helpers/mock-interactions.js';
+import { ArcOverlayManager } from '../arc-overlay-manager.js';
 
 import './test-overlay.js';
 import './test-overlay2.js';
@@ -78,7 +78,7 @@ describe('ArcOverlayMixin', function() {
   }
 
   async function backdropFixture() {
-    return (await fixture(`<test-overlay with-backdrop>
+    return (await fixture(`<test-overlay withbackdrop>
       Overlay with backdrop
       <input disabled>
       <input>

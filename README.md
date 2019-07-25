@@ -21,8 +21,8 @@ An overlay may be hidden by closing or canceling. The difference between close
 and cancel is user intent. Closing generally implies that the user
 acknowledged the content on the overlay. By default, it will cancel whenever
 the user taps outside it or presses the escape key. This behavior is
-configurable with the `no-cancel-on-esc-key` and the
-`no-cancel-on-outside-click` properties. `close()` should be called explicitly
+configurable with the `nocancelonesckey` and the
+`nocancelonoutsideclick` properties. `close()` should be called explicitly
 by the implementer when the user interacts with a control in the overlay
 element. When the dialog is canceled, the overlay fires an
 'iron-overlay-canceled' event. Call `preventDefault` on this event to prevent
@@ -35,7 +35,7 @@ window. You can position and size it manually using CSS. See `ArcFitMixin`.
 
 ### Backdrop
 
-Set the `with-backdrop` attribute to display a backdrop behind the overlay.
+Set the `withbackdrop` attribute to display a backdrop behind the overlay.
 The backdrop is appended to `<body>` and is of type `<iron-overlay-backdrop>`.
 See its doc page for styling options.
 In addition, `with-backdrop` will wrap the focus within the content in the

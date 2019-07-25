@@ -22,8 +22,8 @@ import { pushScrollLock, removeScrollLock } from './arc-scroll-manager.js';
  * and cancel is user intent. Closing generally implies that the user
  * acknowledged the content on the overlay. By default, it will cancel whenever
  * the user taps outside it or presses the escape key. This behavior is
- * configurable with the `no-cancel-on-esc-key` and the
- * `no-cancel-on-outside-click` properties. `close()` should be called explicitly
+ * configurable with the `nocancelonesckey` and the
+ * `nocancelonoutsideclick` properties. `close()` should be called explicitly
  * by the implementer when the user interacts with a control in the overlay
  * element. When the dialog is canceled, the overlay fires an
  * 'iron-overlay-canceled' event. Call `preventDefault` on this event to prevent
@@ -36,10 +36,10 @@ import { pushScrollLock, removeScrollLock } from './arc-scroll-manager.js';
  *
  * ### Backdrop
  *
- * Set the `with-backdrop` attribute to display a backdrop behind the overlay.
- * The backdrop is appended to `<body>` and is of type `<iron-overlay-backdrop>`.
+ * Set the `withbackdrop` attribute to display a backdrop behind the overlay.
+ * The backdrop is appended to `<body>` and is of type `<arc-overlay-backdrop>`.
  * See its doc page for styling options.
- * In addition, `with-backdrop` will wrap the focus within the content in the
+ * In addition, `withbackdrop` will wrap the focus within the content in the
  * light DOM. Override the [`_focusableNodes`
  * getter](#ArcOverlayMixin:property-_focusableNodes) to achieve a
  * different behavior.
@@ -73,7 +73,7 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
       /**
        * True if the overlay is currently displayed.
        */
-      _opened: { type: Boolean, notify: true, reflect: true, attribute: 'opened' },
+      opened: { type: Boolean, reflect: true },
       /**
        * True if the overlay was canceled when it was last closed.
        */
@@ -82,20 +82,24 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
        * Set to true to display a backdrop behind the overlay. It traps the focus
        * within the light DOM of the overlay.
        */
-      _withBackdrop: { type: Boolean, reflect: true, attribute: 'with-backdrop' },
+      withBackdrop: { type: Boolean, reflect: true },
+      _oldWithBackdrop: { type: Boolean, attribute: 'with-backdrop' },
       /**
        * Set to true to disable auto-focusing the overlay or child nodes with
        * the `autofocus` attribute` when the overlay is opened.
        */
-      noAutoFocus: { type: Boolean, reflect: true, attribute: 'no-auto-focus' },
+      noAutoFocus: { type: Boolean, reflect: true },
+      _oldNoAutoFocus: { type: Boolean, attribute: 'no-auto-focus' },
       /**
        * Set to true to disable canceling the overlay with the ESC key.
        */
-      noCancelOnEscKey: { type: Boolean, reflect: true, attribute: 'no-cancel-on-esc-key' },
+      noCancelOnEscKey: { type: Boolean, reflect: true },
+      _oldNoCancelOnEscKey: { type: Boolean, attribute: 'no-cancel-on-esc-key' },
       /**
        * Set to true to disable canceling the overlay by clicking outside it.
        */
-      noCancelOnOutsideClick: { type: Boolean, reflect: true, attribute: 'no-cancel-on-outside-click' },
+      noCancelOnOutsideClick: { type: Boolean, reflect: true },
+      _oldNoCancelOnOutsideClick: { type: Boolean, attribute: 'no-cancel-on-outside-click' },
       /**
        * Contains the reason(s) this overlay was last closed (see
        * `iron-overlay-closed`). `IronOverlayBehavior` provides the `canceled`
@@ -106,24 +110,28 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
       /**
        * Set to true to enable restoring of focus when overlay is closed.
        */
-      restoreFocusOnClose: { type: Boolean, reflect: true, attribute: 'restore-focus-on-close' },
+      restoreFocusOnClose: { type: Boolean, reflect: true },
+      _oldRestoreFocusOnClose: { type: Boolean, attribute: 'restore-focus-on-close' },
       /**
        * Set to true to allow clicks to go through overlays.
        * When the user clicks outside this overlay, the click may
        * close the overlay below.
        */
-      allowClickThrough: { type: Boolean, reflect: true, attribute: 'allow-click-through' },
+      allowClickThrough: { type: Boolean, reflect: true },
+      _oldAllowClickThrough: { type: Boolean, attribute: 'allow-click-through' },
       /**
        * Set to true to keep overlay always on top.
        */
-      alwaysOnTop: { type: Boolean, reflect: true, attribute: 'always-on-top' },
+      alwaysOnTop: { type: Boolean, reflect: true },
+      _oldAlwaysOnTop: { type: Boolean, attribute: 'always-on-top' },
       /**
        * Determines which action to perform when scroll outside an opened overlay
        * happens. Possible values: lock - blocks scrolling from happening, refit -
        * computes the new position on the overlay cancel - causes the overlay to
        * close
        */
-      scrollAction: { type: String, reflect: true, attribute: 'scroll-action' },
+      scrollAction: { type: String, reflect: true },
+      _oldScrollAction: { type: String, attribute: 'scroll-action' },
       /**
        * Shortcut to access to the overlay manager.
        * @private
@@ -145,10 +153,14 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
   }
 
   set opened(value) {
-    if (value === this._opened) {
+    const old = this._opened;
+    if (value === old) {
       return;
     }
     this._opened = value;
+    if (this.requestUpdate) {
+      this.requestUpdate('opened', old);
+    }
     this._openedChanged(value);
     this.__updateScrollObservers(this._isAttached, value, this.scrollAction);
   }
@@ -180,11 +192,87 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
   }
 
   set withBackdrop(value) {
-    if (value === this._withBackdrop) {
+    const old = this._withBackdrop;
+    if (value === old) {
       return;
     }
     this._withBackdrop = value;
+    if (this.requestUpdate) {
+      this.requestUpdate('withBackdrop', old);
+    }
     this._withBackdropChanged(value);
+  }
+
+  get _oldWithBackdrop() {
+    return this.withBackdrop;
+  }
+
+  set _oldWithBackdrop(value) {
+    this.withBackdrop = value;
+  }
+
+  get _oldNoAutoFocus() {
+    return this.noAutoFocus;
+  }
+
+  set _oldNoAutoFocus(value) {
+    this.noAutoFocus = value;
+  }
+
+  get _oldNoCancelOnEscKey() {
+    return this.noCancelOnEscKey;
+  }
+
+  set _oldNoCancelOnEscKey(value) {
+    this.noCancelOnEscKey = value;
+  }
+
+  get _oldNoCancelOnOutsideClick() {
+    return this.noCancelOnOutsideClick;
+  }
+
+  set _oldNoCancelOnOutsideClick(value) {
+    this.noCancelOnOutsideClick = value;
+  }
+
+  get _oldRestoreFocusOnClose() {
+    return this.restoreFocusOnClose;
+  }
+
+  set _oldRestoreFocusOnClose(value) {
+    this.restoreFocusOnClose = value;
+  }
+
+  get _oldAllowClickThrough() {
+    return this.allowClickThrough;
+  }
+
+  set _oldAllowClickThrough(value) {
+    this.allowClickThrough = value;
+  }
+
+  get _oldAlwaysOnTop() {
+    return this.alwaysOnTop;
+  }
+
+  set _oldAlwaysOnTop(value) {
+    this.alwaysOnTop = value;
+  }
+
+  get _oldScrollAction() {
+    return this.scrollAction;
+  }
+
+  set _oldScrollAction(value) {
+    this.scrollAction = value;
+  }
+
+  get 'scroll-action'() {
+    return this.scrollAction;
+  }
+
+  set 'scroll-action'(value) {
+    this.scrollAction = value;
   }
 
   get isAttached() {

@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>arc-resizable-mixin demo</title>
+  <title>arc-opverlay-mixin demo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://unpkg.com/@webcomponents/webcomponentsjs@^2.0.0/webcomponents-loader.js"></script>
   <script type="module">
@@ -29,7 +29,7 @@
   <arc-demo-helper>
     <template>
       <button onclick="backdrop.open()">Overlay with backdrop</button>
-      <simple-overlay id="backdrop" with-backdrop scroll-action="lock">
+      <simple-overlay id="backdrop" withbackdrop scrollaction="lock">
         <p>Hello world!</p>
         <button>Button</button>
         <button onclick="backdrop.close()">Close</button>
@@ -41,7 +41,7 @@
   <arc-demo-helper>
     <template>
       <button onclick="returnFocus.open()">Overlay that restores focus</button>
-      <simple-overlay id="returnFocus" restore-focus-on-close>
+      <simple-overlay id="returnFocus" restorefocusonclose>
         <p>Hello world!</p>
         <button onclick="returnFocus.close()">Close</button>
       </simple-overlay>
@@ -64,7 +64,7 @@
   <arc-demo-helper>
     <template>
       <button onclick="multiple.open()">Open first overlay</button>
-      <simple-overlay id="multiple" tabindex="-1" with-backdrop>
+      <simple-overlay id="multiple" tabindex="-1" withbackdrop>
         <p>click to open another overlay</p>
         <button onclick="multiple2.open()">Open second overlay</button>
         <button onclick="multiple.close()">Close this</button>
@@ -84,12 +84,12 @@
   <arc-demo-helper>
     <template>
       <button onclick="onTop.open()">Open always-on-top</button>
-      <simple-overlay id="onTop" always-on-top tabindex="-1">
+      <simple-overlay id="onTop" alwaysontop tabindex="-1">
         <h2>Always on top</h2>
         <button onclick="backdrop2.open()">Open with backdrop</button>
         <button onclick="onTop.close()">Close this</button>
       </simple-overlay>
-      <simple-overlay id="backdrop2" with-backdrop tabindex="-1">
+      <simple-overlay id="backdrop2" withbackdrop tabindex="-1">
         <h2>With backdrop</h2>
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
           aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
@@ -119,7 +119,7 @@
       </custom-style>
       <button onclick="scrolling.open()">Scrolling overlay</button>
 
-      <simple-overlay id="scrolling" class="with-margin scrollable" tabindex="-1" scroll-action="lock">
+      <simple-overlay id="scrolling" class="with-margin scrollable" tabindex="-1" scrollaction="lock">
         <h2>This overlay scrolls internally.</h2>
         <p>
           Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -258,7 +258,7 @@
   <arc-demo-helper>
     <template>
       <button onclick="plain.open();toast.open()">Overlay that allows click through</button>
-      <simple-overlay id="toast" allow-click-through no-cancel-on-outside-click horizontal-align="left" vertical-align="bottom" no-auto-focus>
+      <simple-overlay id="toast" allowclickthrough nocancelonoutsideclick horizontalalign="left" verticalalign="bottom" noautofocus>
         <span>This overlay allows click-through which can close overlays below it.</span>
         <button onclick="toast.close()">Close</button>
       </simple-overlay>
@@ -270,7 +270,7 @@
     <template>
       <span>
         <button onclick="lockOnScroll.open()">locks scroll</button>
-        <simple-overlay id="lockOnScroll" scroll-action="lock" no-overlap vertical-align="bottom" horizontal-align="left" tabindex="-1">
+        <simple-overlay id="lockOnScroll" scrollaction="lock" nooverlapverticalalign="bottom" horizontalalign="left" tabindex="-1">
           <h2>Prevents scroll outside</h2>
           <button onclick="lockOnScroll.close()">Close this</button>
         </simple-overlay>
@@ -284,7 +284,7 @@
       </span>
       <span>
         <button onclick="cancelOnScroll.open()">cancels on scroll</button>
-        <simple-overlay id="cancelOnScroll" scroll-action="cancel" no-overlap vertical-align="bottom" horizontal-align="left" tabindex="-1">
+        <simple-overlay id="cancelOnScroll" scrollaction="cancel" nooverlap verticalalign="bottom" horizontalalign="left" tabindex="-1">
           <h2>Cancels on scroll</h2>
           <button onclick="cancelOnScroll.close()">Close this</button>
         </simple-overlay>

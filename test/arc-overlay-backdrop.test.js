@@ -1,4 +1,4 @@
-import {fixture, assert, nextFrame} from '@open-wc/testing';
+import { fixture, assert, nextFrame } from '@open-wc/testing';
 import './test-overlay.js';
 
 const s = document.createElement('style');
@@ -25,7 +25,7 @@ document.body.appendChild(sizer);
 describe('ArcOverlayBackdrop', () => {
   async function backdropFixture() {
     return (await fixture(`
-      <test-overlay with-backdrop>
+      <test-overlay withbackdrop>
           Overlay with backdrop
       </test-overlay>`));
   }
