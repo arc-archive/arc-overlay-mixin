@@ -37,7 +37,8 @@
     "test:prune-snapshots": "karma start --prune-snapshots",
     "test:legacy": "karma start --legacy --coverage",
     "test:legacy:watch": "karma start --legacy --auto-watch=true --single-run=false",
-    "test:sl": "karma start karma.sl.config.js --legacy --coverage"
+    "test:sl": "karma start karma.sl.config.js --legacy --coverage",
+    "update-types": "gen-typescript-declarations --deleteExisting --outDir ."
   },
   "dependencies": {
     "@advanced-rest-client/arc-fit-mixin": "^1.0.2",
