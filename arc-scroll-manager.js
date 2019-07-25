@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
