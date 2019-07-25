@@ -318,7 +318,7 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
       this._processMutations(mutations);
     });
     this._childrenObserver = observer;
-    this._childrenObserver.observe(this, {childList: true});
+    this._childrenObserver.observe(this, { childList: true });
   }
 
   _removeSlotListeners() {
