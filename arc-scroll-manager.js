@@ -13,7 +13,7 @@ found at http://polymer.github.io/PATENTS.txt
  * Used to calculate the scroll direction during touch events.
  * @type {!Object}
  */
-let lastTouchPosition = { pageX: 0, pageY: 0 };
+const lastTouchPosition = { pageX: 0, pageY: 0 };
 /**
  * Used to avoid computing event.path and filter scrollable nodes (better perf).
  * @type {?EventTarget}
@@ -26,7 +26,7 @@ let lastScrollableNodes = [];
 /**
  * @type {!Array<string>}
  */
-let scrollEvents = [
+const scrollEvents = [
   // Modern `wheel` event for mouse wheel scrolling:
   'wheel',
   // Older, non-standard `mousewheel` event for some FF:
@@ -60,6 +60,109 @@ export let _unlockedElementCache = null;
  */
 export { currentLockingElement };
 
+/**
+ * Returns scroll `deltaX` and `deltaY`.
+ * @param {!Event} event The scroll event
+ * @return {{deltaX: number, deltaY: number}} Object containing the
+ * x-axis scroll delta (positive: scroll right, negative: scroll left,
+ * 0: no scroll), and the y-axis scroll delta (positive: scroll down,
+ * negative: scroll up, 0: no scroll).
+ * @package
+ */
+export function _getScrollInfo(event) {
+  const info = { deltaX: event.deltaX, deltaY: event.deltaY };
+  // Already available.
+  if ('deltaX' in event) {
+    // do nothing, values are already good.
+  } else if ('wheelDeltaX' in event && 'wheelDeltaY' in event) {
+    // Safari has scroll info in `wheelDeltaX/Y`.
+    info.deltaX = -event.wheelDeltaX;
+    info.deltaY = -event.wheelDeltaY;
+  } else if ('wheelDelta' in event) {
+    // IE10 has only vertical scroll info in `wheelDelta`.
+    info.deltaX = 0;
+    info.deltaY = -event.wheelDelta;
+  } else if ('axis' in event) {
+    // Firefox has scroll info in `detail` and `axis`.
+    info.deltaX = event.axis === 1 ? event.detail : 0;
+    info.deltaY = event.axis === 2 ? event.detail : 0;
+  } else if (event.targetTouches) {
+    // On mobile devices, calculate scroll direction.
+    const touch = event.targetTouches[0];
+    // Touch moves from right to left => scrolling goes right.
+    info.deltaX = lastTouchPosition.pageX - touch.pageX;
+    // Touch moves from down to up => scrolling goes down.
+    info.deltaY = lastTouchPosition.pageY - touch.pageY;
+  }
+  return info;
+}
+
+/**
+ * Returns the node that is scrolling. If there is no scrolling,
+ * returns undefined.
+ * @param {!Array<!Node>} nodes
+ * @param {number} deltaX Scroll delta on the x-axis
+ * @param {number} deltaY Scroll delta on the y-axis
+ * @return {!Node|undefined}
+ * @package
+ */
+export function _getScrollingNode(nodes, deltaX, deltaY) {
+  // No scroll.
+  if (!deltaX && !deltaY) {
+    return;
+  }
+  // Check only one axis according to where there is more scroll.
+  // Prefer vertical to horizontal.
+  const verticalScroll = Math.abs(deltaY) >= Math.abs(deltaX);
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    let canScroll = false;
+    if (verticalScroll) {
+      // delta < 0 is scroll up, delta > 0 is scroll down.
+      canScroll = deltaY < 0 ?
+          node.scrollTop > 0 :
+          node.scrollTop < node.scrollHeight - node.clientHeight;
+    } else {
+      // delta < 0 is scroll left, delta > 0 is scroll right.
+      canScroll = deltaX < 0 ?
+          node.scrollLeft > 0 :
+          node.scrollLeft < node.scrollWidth - node.clientWidth;
+    }
+    if (canScroll) {
+      return node;
+    }
+  }
+}
+
+/**
+ * Returns an array of scrollable nodes up to the current locking element,
+ * which is included too if scrollable.
+ * @param {!Array<!Node>} nodes
+ * @return {!Array<!Node>} scrollables
+ * @package
+ */
+export function _getScrollableNodes(nodes) {
+  const scrollables = [];
+  const lockingIndex = nodes.indexOf(currentLockingElement);
+  // Loop from root target to locking element (included).
+  for (let i = 0; i <= lockingIndex; i++) {
+    // Skip non-Element nodes.
+    if (nodes[i].nodeType !== Node.ELEMENT_NODE) {
+      continue;
+    }
+    const node = /** @type {!Element} */ (nodes[i]);
+    // Check inline style before checking computed style.
+    let style = node.style;
+    if (style.overflow !== 'scroll' && style.overflow !== 'auto') {
+      style = window.getComputedStyle(node);
+    }
+    if (style.overflow === 'scroll' || style.overflow === 'auto') {
+      scrollables.push(node);
+    }
+  }
+  return scrollables;
+}
+
 export function _hasCachedLockedElement(element) {
   return _lockedElementCache.indexOf(element) > -1;
 }
@@ -75,7 +178,6 @@ export function _composedTreeContains(element, child) {
   // this operation are cached (elsewhere) on a per-scroll-lock basis, to
   // guard against potentially expensive lookups happening repeatedly as
   // a user scrolls / touchmoves.
-  let contentElements;
   let distributedNodes;
   let contentIndex;
   let nodeIndex;
@@ -84,7 +186,7 @@ export function _composedTreeContains(element, child) {
     return true;
   }
 
-  contentElements = element.querySelectorAll('slot');
+  const contentElements = element.querySelectorAll('slot');
 
   for (contentIndex = 0; contentIndex < contentElements.length; ++contentIndex) {
     const slot = contentElements[contentIndex];
@@ -102,6 +204,41 @@ export function _composedTreeContains(element, child) {
 
   return false;
 }
+
+/**
+ * Returns true if the event causes scroll outside the current locking
+ * element, e.g. pointer/keyboard interactions, or scroll "leaking"
+ * outside the locking element when it is already at its scroll boundaries.
+ * @param {!Event} event
+ * @return {boolean}
+ * @package
+ */
+export function _shouldPreventScrolling(event) {
+  // Update if root target changed. For touch events, ensure we don't
+  // update during touchmove.
+  const cp = event.composedPath && event.composedPath();
+  const path = cp ? cp : event.path;
+  const target = path[0];
+  if (event.type !== 'touchmove' && lastRootTarget !== target) {
+    lastRootTarget = target;
+    lastScrollableNodes = _getScrollableNodes(path);
+  }
+
+  // Prevent event if no scrollable nodes.
+  if (!lastScrollableNodes.length) {
+    return true;
+  }
+  // Don't prevent touchstart event inside the locking element when it has
+  // scrollable nodes.
+  if (event.type === 'touchstart') {
+    return false;
+  }
+  // Get deltaX/Y.
+  const info = _getScrollInfo(event);
+  // Prevent if there is no child that can scroll.
+  return !_getScrollingNode(lastScrollableNodes, info.deltaX, info.deltaY);
+}
+
 
 export function _scrollInteractionHandler(event) {
   // Avoid canceling an event with cancelable=false, e.g. scrolling is in
@@ -131,8 +268,6 @@ export function elementIsScrollLocked(element) {
     return false;
   }
 
-  let scrollLocked;
-
   if (_hasCachedLockedElement(element)) {
     return true;
   }
@@ -141,7 +276,7 @@ export function elementIsScrollLocked(element) {
     return false;
   }
 
-  scrollLocked = !!lockingElement && lockingElement !== element &&
+  const scrollLocked = !!lockingElement && lockingElement !== element &&
       !_composedTreeContains(lockingElement, element);
 
   if (scrollLocked) {
@@ -228,140 +363,3 @@ export function removeScrollLock(element) {
  * @package
  */
 export { _boundScrollHandler };
-
-/**
- * Returns true if the event causes scroll outside the current locking
- * element, e.g. pointer/keyboard interactions, or scroll "leaking"
- * outside the locking element when it is already at its scroll boundaries.
- * @param {!Event} event
- * @return {boolean}
- * @package
- */
-export function _shouldPreventScrolling(event) {
-  // Update if root target changed. For touch events, ensure we don't
-  // update during touchmove.
-  const cp = event.composedPath && event.composedPath();
-  const path = cp ? cp : event.path;
-  const target = path[0];
-  if (event.type !== 'touchmove' && lastRootTarget !== target) {
-    lastRootTarget = target;
-    lastScrollableNodes = _getScrollableNodes(path);
-  }
-
-  // Prevent event if no scrollable nodes.
-  if (!lastScrollableNodes.length) {
-    return true;
-  }
-  // Don't prevent touchstart event inside the locking element when it has
-  // scrollable nodes.
-  if (event.type === 'touchstart') {
-    return false;
-  }
-  // Get deltaX/Y.
-  const info = _getScrollInfo(event);
-  // Prevent if there is no child that can scroll.
-  return !_getScrollingNode(lastScrollableNodes, info.deltaX, info.deltaY);
-}
-
-/**
- * Returns an array of scrollable nodes up to the current locking element,
- * which is included too if scrollable.
- * @param {!Array<!Node>} nodes
- * @return {!Array<!Node>} scrollables
- * @package
- */
-export function _getScrollableNodes(nodes) {
-  const scrollables = [];
-  const lockingIndex = nodes.indexOf(currentLockingElement);
-  // Loop from root target to locking element (included).
-  for (let i = 0; i <= lockingIndex; i++) {
-    // Skip non-Element nodes.
-    if (nodes[i].nodeType !== Node.ELEMENT_NODE) {
-      continue;
-    }
-    const node = /** @type {!Element} */ (nodes[i]);
-    // Check inline style before checking computed style.
-    let style = node.style;
-    if (style.overflow !== 'scroll' && style.overflow !== 'auto') {
-      style = window.getComputedStyle(node);
-    }
-    if (style.overflow === 'scroll' || style.overflow === 'auto') {
-      scrollables.push(node);
-    }
-  }
-  return scrollables;
-}
-
-/**
- * Returns the node that is scrolling. If there is no scrolling,
- * returns undefined.
- * @param {!Array<!Node>} nodes
- * @param {number} deltaX Scroll delta on the x-axis
- * @param {number} deltaY Scroll delta on the y-axis
- * @return {!Node|undefined}
- * @package
- */
-export function _getScrollingNode(nodes, deltaX, deltaY) {
-  // No scroll.
-  if (!deltaX && !deltaY) {
-    return;
-  }
-  // Check only one axis according to where there is more scroll.
-  // Prefer vertical to horizontal.
-  const verticalScroll = Math.abs(deltaY) >= Math.abs(deltaX);
-  for (let i = 0; i < nodes.length; i++) {
-    const node = nodes[i];
-    let canScroll = false;
-    if (verticalScroll) {
-      // delta < 0 is scroll up, delta > 0 is scroll down.
-      canScroll = deltaY < 0 ?
-          node.scrollTop > 0 :
-          node.scrollTop < node.scrollHeight - node.clientHeight;
-    } else {
-      // delta < 0 is scroll left, delta > 0 is scroll right.
-      canScroll = deltaX < 0 ?
-          node.scrollLeft > 0 :
-          node.scrollLeft < node.scrollWidth - node.clientWidth;
-    }
-    if (canScroll) {
-      return node;
-    }
-  }
-}
-
-/**
- * Returns scroll `deltaX` and `deltaY`.
- * @param {!Event} event The scroll event
- * @return {{deltaX: number, deltaY: number}} Object containing the
- * x-axis scroll delta (positive: scroll right, negative: scroll left,
- * 0: no scroll), and the y-axis scroll delta (positive: scroll down,
- * negative: scroll up, 0: no scroll).
- * @package
- */
-export function _getScrollInfo(event) {
-  const info = { deltaX: event.deltaX, deltaY: event.deltaY };
-  // Already available.
-  if ('deltaX' in event) {
-    // do nothing, values are already good.
-  } else if ('wheelDeltaX' in event && 'wheelDeltaY' in event) {
-    // Safari has scroll info in `wheelDeltaX/Y`.
-    info.deltaX = -event.wheelDeltaX;
-    info.deltaY = -event.wheelDeltaY;
-  } else if ('wheelDelta' in event) {
-    // IE10 has only vertical scroll info in `wheelDelta`.
-    info.deltaX = 0;
-    info.deltaY = -event.wheelDelta;
-  } else if ('axis' in event) {
-    // Firefox has scroll info in `detail` and `axis`.
-    info.deltaX = event.axis === 1 ? event.detail : 0;
-    info.deltaY = event.axis === 2 ? event.detail : 0;
-  } else if (event.targetTouches) {
-    // On mobile devices, calculate scroll direction.
-    const touch = event.targetTouches[0];
-    // Touch moves from right to left => scrolling goes right.
-    info.deltaX = lastTouchPosition.pageX - touch.pageX;
-    // Touch moves from down to up => scrolling goes down.
-    info.deltaY = lastTouchPosition.pageY - touch.pageY;
-  }
-  return info;
-}

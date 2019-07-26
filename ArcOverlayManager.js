@@ -89,7 +89,7 @@ export class ArcOverlayManager {
       return;
     }
     let lastI = this._overlays.length - 1;
-    let currentOverlay = this._overlays[lastI];
+    const currentOverlay = this._overlays[lastI];
     // Ensure always-on-top overlay stays on top.
     if (currentOverlay &&
         this._shouldBeBehindOverlay(overlay, currentOverlay)) {
@@ -132,14 +132,14 @@ export class ArcOverlayManager {
    * @param {!Element} overlay
    */
   addOverlay(overlay) {
-    let i = this._overlays.indexOf(overlay);
+    const i = this._overlays.indexOf(overlay);
     if (i >= 0) {
       this._bringOverlayAtIndexToFront(i);
       this.trackBackdrop();
       return;
     }
     let insertionIndex = this._overlays.length;
-    let currentOverlay = this._overlays[insertionIndex - 1];
+    const currentOverlay = this._overlays[insertionIndex - 1];
     let minimumZ = Math.max(this._getZ(currentOverlay), this._minimumZ);
     const newZ = this._getZ(overlay);
 

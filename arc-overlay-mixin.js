@@ -496,7 +496,7 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
   _processMutations(mutations) {
     if (mutations) {
       for (let i=0; i < mutations.length; i++) {
-        let mutation = mutations[i];
+        const mutation = mutations[i];
         if (mutation.addedNodes) {
           this._listenSlots(mutation.addedNodes);
         }
@@ -515,7 +515,7 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
    */
   _listenSlots(nodeList) {
     for (let i=0; i < nodeList.length; i++) {
-      let n = nodeList[i];
+      const n = nodeList[i];
       if (n.localName === 'slot') {
         n.addEventListener('slotchange', this._boundSchedule);
       }
@@ -529,7 +529,7 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
    */
   _unlistenSlots(nodeList) {
     for (let i=0; i < nodeList.length; i++) {
-      let n = nodeList[i];
+      const n = nodeList[i];
       if (n.localName === 'slot') {
         n.removeEventListener('slotchange', this._boundSchedule);
       }
