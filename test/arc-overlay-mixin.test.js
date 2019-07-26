@@ -157,6 +157,13 @@ describe('ArcOverlayMixin', function() {
       overlay.opened = true;
     });
 
+    it('overlay opened-changed event', function(done) {
+      overlay.addEventListener('opened-changed', function() {
+        done();
+      });
+      overlay.opened = true;
+    });
+
     it('open() refits overlay only once', function(done) {
       const spy = sinon.spy(overlay, 'refit');
       runAfterOpen(overlay, function() {

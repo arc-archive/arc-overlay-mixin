@@ -163,6 +163,11 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
     }
     this._openedChanged(value);
     this.__updateScrollObservers(this._isAttached, value, this.scrollAction);
+    this.dispatchEvent(new CustomEvent('opened-changed', {
+      detail: {
+        value
+      }
+    }));
   }
   /**
    * True if the overlay was canceled when it was last closed.
