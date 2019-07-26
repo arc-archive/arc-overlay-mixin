@@ -1653,6 +1653,174 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
+  describe('onopenedchanged', () => {
+    let element;
+    beforeEach(async () => {
+      element = await basicFixture();
+    });
+
+    it('Getter returns previously registered handler', () => {
+      assert.isUndefined(element.onopenedchanged);
+      const f = () => {};
+      element.onopenedchanged = f;
+      assert.isTrue(element.onopenedchanged === f);
+    });
+
+    it('Calls registered function', () => {
+      let called = false;
+      const f = () => {
+        called = true;
+      };
+      element.onopenedchanged = f;
+      element.opened = true;
+      element.onopenedchanged = null;
+      assert.isTrue(called);
+    });
+
+    it('Unregisteres old function', () => {
+      let called1 = false;
+      let called2 = false;
+      const f1 = () => {
+        called1 = true;
+      };
+      const f2 = () => {
+        called2 = true;
+      };
+      element.onopenedchanged = f1;
+      element.onopenedchanged = f2;
+      element.opened = true;
+      element.onopenedchanged = null;
+      assert.isFalse(called1);
+      assert.isTrue(called2);
+    });
+  });
+
+  describe('onoverlaycanceled', () => {
+    let element;
+    beforeEach(async () => {
+      element = await basicFixture();
+    });
+
+    it('Getter returns previously registered handler', () => {
+      assert.isUndefined(element.onoverlaycanceled);
+      const f = () => {};
+      element.onoverlaycanceled = f;
+      assert.isTrue(element.onoverlaycanceled === f);
+    });
+
+    it('Calls registered function', () => {
+      let called = false;
+      const f = () => {
+        called = true;
+      };
+      element.onoverlaycanceled = f;
+      element.cancel();
+      element.onoverlaycanceled = null;
+      assert.isTrue(called);
+    });
+
+    it('Unregisteres old function', () => {
+      let called1 = false;
+      let called2 = false;
+      const f1 = () => {
+        called1 = true;
+      };
+      const f2 = () => {
+        called2 = true;
+      };
+      element.onoverlaycanceled = f1;
+      element.onoverlaycanceled = f2;
+      element.cancel();
+      element.onoverlaycanceled = null;
+      assert.isFalse(called1);
+      assert.isTrue(called2);
+    });
+  });
+
+  describe('onoverlayopened', () => {
+    let element;
+    beforeEach(async () => {
+      element = await basicFixture();
+    });
+
+    it('Getter returns previously registered handler', () => {
+      assert.isUndefined(element.onoverlayopened);
+      const f = () => {};
+      element.onoverlayopened = f;
+      assert.isTrue(element.onoverlayopened === f);
+    });
+
+    it('Calls registered function', () => {
+      let called = false;
+      const f = () => {
+        called = true;
+      };
+      element.onoverlayopened = f;
+      element._finishRenderOpened();
+      element.onoverlayopened = null;
+      assert.isTrue(called);
+    });
+
+    it('Unregisteres old function', () => {
+      let called1 = false;
+      let called2 = false;
+      const f1 = () => {
+        called1 = true;
+      };
+      const f2 = () => {
+        called2 = true;
+      };
+      element.onoverlayopened = f1;
+      element.onoverlayopened = f2;
+      element._finishRenderOpened();
+      element.onoverlayopened = null;
+      assert.isFalse(called1);
+      assert.isTrue(called2);
+    });
+  });
+
+  describe('onoverlayclosed', () => {
+    let element;
+    beforeEach(async () => {
+      element = await basicFixture();
+    });
+
+    it('Getter returns previously registered handler', () => {
+      assert.isUndefined(element.onoverlayclosed);
+      const f = () => {};
+      element.onoverlayclosed = f;
+      assert.isTrue(element.onoverlayclosed === f);
+    });
+
+    it('Calls registered function', () => {
+      let called = false;
+      const f = () => {
+        called = true;
+      };
+      element.onoverlayclosed = f;
+      element._finishRenderClosed();
+      element.onoverlayclosed = null;
+      assert.isTrue(called);
+    });
+
+    it('Unregisteres old function', () => {
+      let called1 = false;
+      let called2 = false;
+      const f1 = () => {
+        called1 = true;
+      };
+      const f2 = () => {
+        called2 = true;
+      };
+      element.onoverlayclosed = f1;
+      element.onoverlayclosed = f2;
+      element._finishRenderClosed();
+      element.onoverlayclosed = null;
+      assert.isFalse(called1);
+      assert.isTrue(called2);
+    });
+  });
+
   describe('a11y', function() {
     it('overlay has aria-hidden=true when opened', async () => {
       const overlay = await basicFixture();

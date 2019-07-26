@@ -328,6 +328,62 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
   get _focusableNodes() {
     return ArcFocusablesHelper.getTabbableNodes(this);
   }
+  /**
+   * @return {Function} Previously registered handler for `opened-changed` event
+   */
+  get onopenedchanged() {
+    return this['_onopened-changed'];
+  }
+  /**
+   * Registers a callback function for `opened-changed` event
+   * @param {Function} value A callback to register. Pass `null` or `undefined`
+   * to clear the listener.
+   */
+  set onopenedchanged(value) {
+    this._registerCallback('opened-changed', value);
+  }
+  /**
+   * @return {Function} Previously registered handler for `overlay-canceled` event
+   */
+  get onoverlaycanceled() {
+    return this['_onoverlay-canceled'];
+  }
+  /**
+   * Registers a callback function for `overlay-canceled` event
+   * @param {Function} value A callback to register. Pass `null` or `undefined`
+   * to clear the listener.
+   */
+  set onoverlaycanceled(value) {
+    this._registerCallback('overlay-canceled', value);
+  }
+  /**
+   * @return {Function} Previously registered handler for `overlay-opened` event
+   */
+  get onoverlayopened() {
+    return this['_onoverlay-opened'];
+  }
+  /**
+   * Registers a callback function for `overlay-opened` event
+   * @param {Function} value A callback to register. Pass `null` or `undefined`
+   * to clear the listener.
+   */
+  set onoverlayopened(value) {
+    this._registerCallback('overlay-opened', value);
+  }
+  /**
+   * @return {Function} Previously registered handler for `overlay-closed` event
+   */
+  get onoverlayclosed() {
+    return this['_onoverlay-closed'];
+  }
+  /**
+   * Registers a callback function for `overlay-closed` event
+   * @param {Function} value A callback to register. Pass `null` or `undefined`
+   * to clear the listener.
+   */
+  set onoverlayclosed(value) {
+    this._registerCallback('overlay-closed', value);
+  }
 
   constructor() {
     super();
@@ -404,6 +460,23 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
         this._finishRenderClosed();
       }
     }
+  }
+  /**
+   * Registers an event handler for given type
+   * @param {String} eventType Event type (name)
+   * @param {Function} value The handler to register
+   */
+  _registerCallback(eventType, value) {
+    const key = `_on${eventType}`;
+    if (this[key]) {
+      this.removeEventListener(eventType, this[key]);
+    }
+    if (typeof value !== 'function') {
+      this[key] = null;
+      return;
+    }
+    this[key] = value;
+    this.addEventListener(eventType, value);
   }
 
   _setupSlotListeners() {
