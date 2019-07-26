@@ -26,7 +26,7 @@ import { pushScrollLock, removeScrollLock } from './arc-scroll-manager.js';
  * `nocancelonoutsideclick` properties. `close()` should be called explicitly
  * by the implementer when the user interacts with a control in the overlay
  * element. When the dialog is canceled, the overlay fires an
- * 'iron-overlay-canceled' event. Call `preventDefault` on this event to prevent
+ * 'overlay-canceled' event. Call `preventDefault` on this event to prevent
  * the overlay from closing.
  *
  * ### Positioning
@@ -102,7 +102,7 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
       _oldNoCancelOnOutsideClick: { type: Boolean, attribute: 'no-cancel-on-outside-click' },
       /**
        * Contains the reason(s) this overlay was last closed (see
-       * `iron-overlay-closed`). `IronOverlayBehavior` provides the `canceled`
+       * `overlay-closed`). `ArcOverlayMixin` provides the `canceled`
        * reason; implementers of the behavior can provide other reasons in
        * addition to `canceled`.
        */
@@ -394,7 +394,7 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
     this.__rafs = {};
     this._manager.removeOverlay(this);
     // We got detached while animating, ensure we show/hide the overlay
-    // and fire iron-overlay-opened/closed event!
+    // and fire overlay-opened/closed event!
     if (this.__isAnimating) {
       if (this.opened) {
         this._finishRenderOpened();
@@ -498,12 +498,18 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
    * @param {Event=} event The original event
    */
   cancel(event) {
-    const cancelEvent = new CustomEvent('iron-overlay-canceled', {
+    const detail = {
       cancelable: true,
       bubbles: true,
       composed: true,
       detail: event
-    });
+    };
+    let cancelEvent = new CustomEvent('overlay-canceled', detail);
+    this.dispatchEvent(cancelEvent);
+    if (cancelEvent.defaultPrevented) {
+      return;
+    }
+    cancelEvent = new CustomEvent('iron-overlay-canceled', detail);
     this.dispatchEvent(cancelEvent);
     if (cancelEvent.defaultPrevented) {
       return;
@@ -621,22 +627,23 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
 
   /**
    * Tasks to be performed at the end of open action. Will fire
-   * `iron-overlay-opened`.
+   * `overlay-opened`.
    * @protected
    */
   _finishRenderOpened() {
     this.notifyResize();
     this.__isAnimating = false;
-
-    this.dispatchEvent(new CustomEvent('iron-overlay-opened', {
+    const detail = {
       bubbles: true,
       composed: true
-    }));
+    };
+    this.dispatchEvent(new CustomEvent('overlay-opened', detail));
+    this.dispatchEvent(new CustomEvent('iron-overlay-opened', detail));
   }
 
   /**
    * Tasks to be performed at the end of close action. Will fire
-   * `iron-overlay-closed`.
+   * `overlay-closed`.
    * @protected
    */
   _finishRenderClosed() {
@@ -646,11 +653,13 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
     this.style.zIndex = '';
     this.notifyResize();
     this.__isAnimating = false;
-    this.dispatchEvent(new CustomEvent('iron-overlay-closed', {
+    const detail = {
       bubbles: true,
       composed: true,
       detail: this.closingReason
-    }));
+    };
+    this.dispatchEvent(new CustomEvent('overlay-closed', detail));
+    this.dispatchEvent(new CustomEvent('iron-overlay-closed', detail));
   }
 
   _preparePositioning() {
@@ -1004,9 +1013,13 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
 
   /**
    * Fired after the overlay opens.
-   * @event iron-overlay-opened
+   * @event overlay-opened
    */
-
+  /**
+   * Fired after the overlay opens.
+   * @event iron-overlay-opened
+   * @deprecated Use `overlay-opened` event instead
+   */
   /**
    * Fired when the overlay is canceled, but before it is closed.
    * @event iron-overlay-canceled
@@ -1014,12 +1027,27 @@ export const ArcOverlayMixin = (superClass) => class extends ArcFitMixin(ArcResi
    * by calling `event.preventDefault()`. The `event.detail` is the original event
    * that originated the canceling (e.g. ESC keyboard event or click event outside
    * the overlay).
+   * @deprecated Use `overlay-canceled` event instead
    */
-
+  /**
+   * Fired when the overlay is canceled, but before it is closed.
+   * @event overlay-canceled
+   * @param {Event} event The closing of the overlay can be prevented
+   * by calling `event.preventDefault()`. The `event.detail` is the original event
+   * that originated the canceling (e.g. ESC keyboard event or click event outside
+   * the overlay).
+   */
+  /**
+   * Fired after the overlay closes.
+   * @event overlay-closed
+   * @param {Event} event The `event.detail` is the `closingReason` property
+   * (contains `canceled`, whether the overlay was canceled).
+   */
   /**
    * Fired after the overlay closes.
    * @event iron-overlay-closed
    * @param {Event} event The `event.detail` is the `closingReason` property
    * (contains `canceled`, whether the overlay was canceled).
+   * @deprecated Use `overlay-closed` instead.
    */
 };

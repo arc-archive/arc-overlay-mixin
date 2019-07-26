@@ -104,12 +104,12 @@ describe('ArcOverlayMixin', function() {
   }
 
   function runAfterOpen(overlay, callback) {
-    overlay.addEventListener('iron-overlay-opened', callback);
+    overlay.addEventListener('overlay-opened', callback);
     overlay.open();
   }
 
   function runAfterClose(overlay, callback) {
-    overlay.addEventListener('iron-overlay-closed', callback);
+    overlay.addEventListener('overlay-closed', callback);
     overlay.close();
   }
 
@@ -144,6 +144,20 @@ describe('ArcOverlayMixin', function() {
     });
 
     it('overlay open/close events', function(done) {
+      let nevents = 0;
+      overlay.addEventListener('overlay-opened', function() {
+        nevents += 1;
+        overlay.opened = false;
+      });
+      overlay.addEventListener('overlay-closed', function() {
+        nevents += 1;
+        assert.equal(nevents, 2, 'opened and closed events fired');
+        done();
+      });
+      overlay.opened = true;
+    });
+
+    it('overlay legacy iron- open/close events', function(done) {
       let nevents = 0;
       overlay.addEventListener('iron-overlay-opened', function() {
         nevents += 1;
@@ -227,6 +241,20 @@ describe('ArcOverlayMixin', function() {
 
     it('overlay open/close events', function(done) {
       let nevents = 0;
+      overlay.addEventListener('overlay-opened', function() {
+        nevents += 1;
+        overlay.opened = false;
+      });
+      overlay.addEventListener('overlay-closed', function() {
+        nevents += 1;
+        assert.equal(nevents, 2, 'opened and closed events fired');
+        done();
+      });
+      overlay.opened = true;
+    });
+
+    it('overlay legacy iron- open/close events', function(done) {
+      let nevents = 0;
       overlay.addEventListener('iron-overlay-opened', function() {
         nevents += 1;
         overlay.opened = false;
@@ -291,7 +319,7 @@ describe('ArcOverlayMixin', function() {
 
     it('close() triggers iron-resize', function(done) {
       runAfterOpen(overlay, function() {
-        let spy = sinon.stub();
+        const spy = sinon.stub();
         overlay.addEventListener('iron-resize', spy);
         runAfterClose(overlay, function() {
           assert.equal(
@@ -349,10 +377,10 @@ describe('ArcOverlayMixin', function() {
     it('clicking an overlay does not close it', function(done) {
       runAfterOpen(overlay, function() {
         const spy = sinon.stub();
-        overlay.addEventListener('iron-overlay-closed', spy);
+        overlay.addEventListener('overlay-closed', spy);
         overlay.click();
         setTimeout(function() {
-          assert.isFalse(spy.called, 'iron-overlay-closed should not fire');
+          assert.isFalse(spy.called, 'overlay-closed should not fire');
           done();
         }, 10);
       });
@@ -377,7 +405,20 @@ describe('ArcOverlayMixin', function() {
       }, 10);
     });
 
-    it('clicking outside fires iron-overlay-canceled', function(done) {
+    it('clicking outside fires overlay-canceled', function(done) {
+      runAfterOpen(overlay, function() {
+        overlay.addEventListener('overlay-canceled', function(event) {
+          assert.equal(
+              event.detail.target,
+              document.body,
+              'detail contains original click event');
+          done();
+        });
+        document.body.click();
+      });
+    });
+
+    it('clicking outside fires legacy iron-overlay-canceled', function(done) {
       runAfterOpen(overlay, function() {
         overlay.addEventListener('iron-overlay-canceled', function(event) {
           assert.equal(
@@ -392,7 +433,7 @@ describe('ArcOverlayMixin', function() {
 
     it('clicking outside closes the overlay', function(done) {
       runAfterOpen(overlay, function() {
-        overlay.addEventListener('iron-overlay-closed', function(event) {
+        overlay.addEventListener('overlay-closed', function(event) {
           assert.isTrue(event.detail.canceled, 'overlay is canceled');
           done();
         });
@@ -400,7 +441,23 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('iron-overlay-canceled event can be prevented', function(done) {
+    it('overlay-canceled event can be prevented', function(done) {
+      runAfterOpen(overlay, function() {
+        overlay.addEventListener('overlay-canceled', function(event) {
+          event.preventDefault();
+        });
+        const spy = sinon.stub();
+        overlay.addEventListener('overlay-closed', spy);
+        document.body.click();
+        setTimeout(function() {
+          assert.isTrue(overlay.opened, 'overlay is still open');
+          assert.isFalse(spy.called, 'overlay-closed not fired');
+          done();
+        }, 10);
+      });
+    });
+
+    it('legacy iron-overlay-canceled event can be prevented', function(done) {
       runAfterOpen(overlay, function() {
         overlay.addEventListener('iron-overlay-canceled', function(event) {
           event.preventDefault();
@@ -418,7 +475,7 @@ describe('ArcOverlayMixin', function() {
 
     it('cancel an overlay with esc key', function(done) {
       runAfterOpen(overlay, function() {
-        overlay.addEventListener('iron-overlay-canceled', function(event) {
+        overlay.addEventListener('overlay-canceled', function(event) {
           assert.equal(event.detail.type, 'keydown');
           done();
         });
@@ -428,7 +485,7 @@ describe('ArcOverlayMixin', function() {
 
     it('close an overlay with esc key', function(done) {
       runAfterOpen(overlay, function() {
-        overlay.addEventListener('iron-overlay-closed', function(event) {
+        overlay.addEventListener('overlay-closed', function(event) {
           assert.isTrue(event.detail.canceled, 'overlay is canceled');
           done();
         });
@@ -436,27 +493,27 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('no-cancel-on-outside-click property', function(done) {
+    it('nocancelonoutsideclick property', function(done) {
       overlay.noCancelOnOutsideClick = true;
       runAfterOpen(overlay, function() {
         const spy = sinon.stub();
-        overlay.addEventListener('iron-overlay-closed', spy);
+        overlay.addEventListener('overlay-closed', spy);
         tap(document.body);
         setTimeout(function() {
-          assert.isFalse(spy.called, 'iron-overlay-closed should not fire');
+          assert.isFalse(spy.called, 'overlay-closed should not fire');
           done();
         }, 10);
       });
     });
 
-    it('no-cancel-on-esc-key property', function(done) {
+    it('nocancelonesckey property', function(done) {
       overlay.noCancelOnEscKey = true;
       runAfterOpen(overlay, function() {
         const spy = sinon.stub();
-        overlay.addEventListener('iron-overlay-closed', spy);
+        overlay.addEventListener('overlay-closed', spy);
         pressAndReleaseKeyOn(document, 27);
         setTimeout(function() {
-          assert.isFalse(spy.called, 'iron-overlay-cancel should not fire');
+          assert.isFalse(spy.called, 'overlay-cancel should not fire');
           done();
         }, 10);
       });
@@ -502,7 +559,7 @@ describe('ArcOverlayMixin', function() {
 
     it('cancel an overlay with esc key even if event is prevented by other listeners', function(done) {
       runAfterOpen(overlay, function() {
-        overlay.addEventListener('iron-overlay-canceled', function() {
+        overlay.addEventListener('overlay-canceled', function() {
           done();
         });
         pressAndReleaseKeyOn(document, 27, '', 'Escape');
@@ -534,7 +591,7 @@ describe('ArcOverlayMixin', function() {
 
     it('cancel an overlay with tap outside even if event is prevented by other listeners', function(done) {
       runAfterOpen(overlay, function() {
-        overlay.addEventListener('iron-overlay-canceled', function() {
+        overlay.addEventListener('overlay-canceled', function() {
           done();
         });
         tap(document.body);
@@ -549,7 +606,7 @@ describe('ArcOverlayMixin', function() {
     });
 
     it('overlay open by default', function(done) {
-      overlay.addEventListener('iron-overlay-opened', function() {
+      overlay.addEventListener('overlay-opened', function() {
         assert.isTrue(overlay.opened, 'overlay starts opened');
         assert.notEqual(
             getComputedStyle(overlay).display, 'none', 'overlay starts showing');
@@ -558,8 +615,8 @@ describe('ArcOverlayMixin', function() {
     });
 
     it('overlay positioned & sized properly', function(done) {
-      overlay.addEventListener('iron-overlay-opened', function() {
-        let s = getComputedStyle(overlay);
+      overlay.addEventListener('overlay-opened', function() {
+        const s = getComputedStyle(overlay);
         assert.closeTo(
             parseFloat(s.left),
             (window.innerWidth - overlay.offsetWidth) / 2,
@@ -1147,7 +1204,7 @@ describe('ArcOverlayMixin', function() {
     it('withBackdrop = false does not prevent click outside event', function(done) {
       overlay.withBackdrop = false;
       runAfterOpen(overlay, function() {
-        overlay.addEventListener('iron-overlay-canceled', function(event) {
+        overlay.addEventListener('overlay-canceled', function(event) {
           assert.isFalse(
               event.detail.defaultPrevented, 'click event not prevented');
           done();
@@ -1433,13 +1490,12 @@ describe('ArcOverlayMixin', function() {
     let trigger;
 
     beforeEach((done) => {
-      composedFixture()
-      .then((el) => {
+      composedFixture().then((el) => {
         composed = el;
         overlay = composed.shadowRoot.querySelector('#overlay');
         trigger = composed.shadowRoot.querySelector('#trigger');
         overlay.withBackdrop = true;
-        overlay.addEventListener('iron-overlay-opened', function() {
+        overlay.addEventListener('overlay-opened', function() {
           done();
         });
         tap(trigger);
