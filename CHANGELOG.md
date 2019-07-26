@@ -63,3 +63,22 @@
 
 
 
+## [1.0.3](https://github.com/advanced-rest-client/arc-overlay-mixin/compare/1.0.0...1.0.3) (2019-07-26)
+
+
+### Bug Fixes
+
+* fixing linter errors ([3d93c98](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/3d93c98))
+* fixing linter errors ([7e7a986](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/7e7a986))
+* fixing npm audit errors ([10ffbd2](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/10ffbd2))
+
+
+### Features
+
+* adding `opened-changed` event ([f9bb53f](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/f9bb53f))
+* adding on[event type] event listeners ([5b7fa34](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/5b7fa34))
+* adding types ([03ff832](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/03ff832))
+* deprecating iron-* events ([12ad6cb](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/12ad6cb))
+
+
+
