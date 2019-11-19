@@ -28,7 +28,7 @@ Custom property | Description | Default
 `--iron-overlay-backdrop-opened`           | Mixin applied to `iron-overlay-backdrop` when it is displayed | {}
 */
 export class ArcOverlayBackdrop extends LitElement {
-  static get styles() {
+  get styles() {
     return css`
     :host {
       position: fixed;
@@ -182,6 +182,7 @@ export class ArcOverlayBackdrop extends LitElement {
   }
 
   render() {
-    return html`<slot></slot>`;
+    return html`<style>${this.styles}</style>
+<slot></slot>`;
   }
 }

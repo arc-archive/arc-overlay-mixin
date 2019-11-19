@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit-element';
 import './test-overlay.js';
 
 class TestMenuButton extends LitElement {
-  static get styles() {
+  get styles() {
     return css`
     :host {
       display: block;
@@ -21,7 +21,8 @@ class TestMenuButton extends LitElement {
   }
 
   render() {
-    return html`<button id="trigger" @click="${this.toggle}">Open</button>
+    return html`<style>${this.styles}</style>
+    <button id="trigger" @click="${this.toggle}">Open</button>
     <test-overlay id="overlay">
       Composed overlay
       <button>button 1</button>
