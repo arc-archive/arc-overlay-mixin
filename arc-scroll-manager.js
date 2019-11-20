@@ -119,14 +119,10 @@ export function _getScrollingNode(nodes, deltaX, deltaY) {
     let canScroll = false;
     if (verticalScroll) {
       // delta < 0 is scroll up, delta > 0 is scroll down.
-      canScroll = deltaY < 0 ?
-          node.scrollTop > 0 :
-          node.scrollTop < node.scrollHeight - node.clientHeight;
+      canScroll = deltaY < 0 ? node.scrollTop > 0 : node.scrollTop < node.scrollHeight - node.clientHeight;
     } else {
       // delta < 0 is scroll left, delta > 0 is scroll right.
-      canScroll = deltaX < 0 ?
-          node.scrollLeft > 0 :
-          node.scrollLeft < node.scrollWidth - node.clientWidth;
+      canScroll = deltaX < 0 ? node.scrollLeft > 0 : node.scrollLeft < node.scrollWidth - node.clientWidth;
     }
     if (canScroll) {
       return node;
@@ -153,10 +149,10 @@ export function _getScrollableNodes(nodes) {
     const node = /** @type {!Element} */ (nodes[i]);
     // Check inline style before checking computed style.
     let style = node.style;
-    if (style.overflow !== 'scroll' && style.overflow !== 'auto') {
+    if (!style.overflow.includes('scroll') && !style.overflow.includes('auto')) {
       style = window.getComputedStyle(node);
     }
-    if (style.overflow === 'scroll' || style.overflow === 'auto') {
+    if (style.overflow.includes('scroll') || style.overflow.includes('auto')) {
       scrollables.push(node);
     }
   }
@@ -239,7 +235,6 @@ export function _shouldPreventScrolling(event) {
   return !_getScrollingNode(lastScrollableNodes, info.deltaX, info.deltaY);
 }
 
-
 export function _scrollInteractionHandler(event) {
   // Avoid canceling an event with cancelable=false, e.g. scrolling is in
   // progress and cannot be interrupted.
@@ -276,8 +271,8 @@ export function elementIsScrollLocked(element) {
     return false;
   }
 
-  const scrollLocked = !!lockingElement && lockingElement !== element &&
-      !_composedTreeContains(lockingElement, element);
+  const scrollLocked =
+    !!lockingElement && lockingElement !== element && !_composedTreeContains(lockingElement, element);
 
   if (scrollLocked) {
     _lockedElementCache.push(element);
