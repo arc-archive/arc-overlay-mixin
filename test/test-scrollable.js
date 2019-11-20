@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit-element';
 import './test-overlay.js';
 
 class TestScrollable extends LitElement {
-  static get styles() {
+  get styles() {
     return css`
     #scrollable, #overlay {
       max-width: 200px;
@@ -12,7 +12,8 @@ class TestScrollable extends LitElement {
   }
 
   render() {
-    return html`<div id="scrollable">
+    return html`<style>${this.styles}</style>
+    <div id="scrollable">
       <slot name="scrollable-content"></slot>
     </div>
     <test-overlay id="overlay">

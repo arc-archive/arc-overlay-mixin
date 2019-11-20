@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit-element';
 import './test-buttons.js';
 
 class TestButtonsWrapper extends LitElement {
-  static get styles() {
+  get styles() {
     return css`
     :host {
       display: block;
@@ -12,7 +12,7 @@ class TestButtonsWrapper extends LitElement {
   }
 
   render() {
-    return html`
+    return html`<style>${this.styles}</style>
     <select id="select">
       <option>1</option>
     </select>

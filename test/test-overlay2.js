@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit-element';
 import { ArcOverlayMixin } from '../arc-overlay-mixin.js';
 
 class TestOverlay2 extends ArcOverlayMixin(LitElement) {
-  static get styles() {
+  get styles() {
     return css`
     :host {
         background: white;
@@ -19,7 +19,8 @@ class TestOverlay2 extends ArcOverlayMixin(LitElement) {
   }
 
   render() {
-    return html`<button id="first">first</button>
+    return html`<style>${this.styles}</style>
+    <button id="first">first</button>
     <slot></slot>
     <button id="last">last</button>`;
   }

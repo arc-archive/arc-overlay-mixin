@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
 
 class XScrollableElement extends LitElement {
-  static get styles() {
+  get styles() {
     return css`
     :host {
       display: block;
@@ -26,7 +26,8 @@ class XScrollableElement extends LitElement {
   }
 
   render() {
-    return html`<div id="ChildOne">
+    return html`<style>${this.styles}</style>
+    <div id="ChildOne">
       <div id="GrandchildOne">
         <div class="scrollContent"></div>
       </div>
