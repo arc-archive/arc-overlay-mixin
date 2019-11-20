@@ -1,6 +1,6 @@
 {
   "name": "@advanced-rest-client/arc-overlay-mixin",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "arc-overlay-mixin is a port of iron-overlay-behavior that works with web components",
   "keywords": [
     "api-components",
