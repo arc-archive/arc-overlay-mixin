@@ -211,3 +211,31 @@
  [db17137](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/db17137a97c53714921f530abefc1f86161b1e58) by Pawel
 
 
+<a name="1.1.1"></a>
+## [1.1.1](https://github.com/advanced-rest-client/arc-overlay-mixin/compare/1.0.4...1.1.1) (2020-06-09)
+
+### Build
+
+* bumping version [c6b085d](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/c6b085d10d13e7309d0ca1d3c47a764661e0471b) by Pawel
+
+
+### Update
+
+* [ci skip] automated merge master->stage. syncing main branches [572f8df](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/572f8df54e572fe88888bc10d4a87c54f49f9e77) by Ci agent
+
+
+### Documentation
+
+* updating readme file [4f8c65f](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/4f8c65f0dea8e6a31c86f92e185c6289e2442c76) by Pawel
+
+
+### Bug Fixes
+
+* adding missing index.js file [24af537](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/24af5373061203799d435f2d994d2f412009ab21) by Pawel
+
+
+### Refactor
+
+* bulk upgrade to typescript [f74b97e](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/f74b97ec40308f661c1ef52c04819e2302ad05a9) by Pawel
+
+
