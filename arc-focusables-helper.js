@@ -1,2 +1,3 @@
-import { ArcFocusablesHelper as Helper } from './ArcFocusablesHelper.js';
+import { ArcFocusablesHelper as Helper } from './src/ArcFocusablesHelper.js';
+
 export const ArcFocusablesHelper = new Helper();
