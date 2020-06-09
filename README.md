@@ -1,6 +1,6 @@
 [![Published on NPM](https://img.shields.io/npm/v/@advanced-rest-client/arc-overlay-mixin.svg)](https://www.npmjs.com/package/@advanced-rest-client/arc-overlay-mixin)
 
-[![Build Status](https://travis-ci.org/advanced-rest-client/arc-overlay-mixin.svg?branch=stage)](https://travis-ci.org/advanced-rest-client/arc-overlay-mixin)
+[![Build Status](https://travis-ci.com/advanced-rest-client/arc-overlay-mixin.svg)](https://travis-ci.com/advanced-rest-client/arc-overlay-mixin)
 
 [![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/advanced-rest-client/arc-overlay-mixin)
 
@@ -58,7 +58,7 @@ npm i @advanced-rest-client/arc-overlay-mixin
 
 ```javascript
 import { LitElement } from 'lit-element';
-import { ArcOverlayMixin } from '@advanced-rest-client/arc-overlay-mixin/arc-overlay-mixin.js';
+import { ArcOverlayMixin } from '@advanced-rest-client/arc-overlay-mixin';
 
 class ArcOverlayImpl extends ArcOverlayMixin(LitElement) {
   static get properties() {
