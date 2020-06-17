@@ -118,7 +118,7 @@ interface ArcOverlayMixin {
    * computes the new position on the overlay cancel - causes the overlay to
    * close
    */
-  scrollAction: { type: String, reflect: true },
+  scrollAction: string,
   /**
    * Shortcut to access to the overlay manager.
    */
