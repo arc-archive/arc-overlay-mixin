@@ -264,3 +264,24 @@
 * adding missing index.js file [24af537](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/24af5373061203799d435f2d994d2f412009ab21) by Pawel
 
 
+<a name="1.1.3"></a>
+## [1.1.3](https://github.com/advanced-rest-client/arc-overlay-mixin/compare/1.1.1...1.1.3) (2020-06-22)
+
+### Build
+
+* bumping version [8971582](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/8971582bb4f3d0cea3c26d34d7a4447fa58178b7) by Pawel
+
+
+### Update
+
+* adding export to mixing constructor type declaration [ff23a30](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/ff23a305fc023893c9ee31155cbfddeefff3dc78) by Pawel
+* updating dev dependencies [25b2805](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/25b2805a3b826a86a42c96c8245c7a7659d14de5) by Pawel
+* [ci skip] automated merge master->stage. syncing main branches [0019017](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/0019017338dd84765d981b69dd3a8585999baaea) by Ci agent
+* [ci skip] automated merge master->stage. syncing main branches [a81926e](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/a81926eeeceeb204c5cb91e33beeec44d84a64cb) by Ci agent
+
+
+### Bug Fixes
+
+* fixing type definition for the mixin [4296baa](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/4296baac9fe9fe34c157342d2de23b8b15bb73ec) by Pawel
+
+
