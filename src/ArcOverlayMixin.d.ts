@@ -4,7 +4,7 @@ import {ArcOverlayManager} from './ArcOverlayManager.js';
 import {ArcOverlayBackdrop} from './ArcOverlayBackdrop.js';
 
 declare function ArcOverlayMixin<T extends new (...args: any[]) => {}>(base: T): T & ArcFitMixinConstructor & ArcResizableMixinConstructor & ArcOverlayMixinConstructor;
-interface ArcOverlayMixinConstructor {
+export interface ArcOverlayMixinConstructor {
   new(...args: any[]): ArcOverlayMixin;
 }
 
