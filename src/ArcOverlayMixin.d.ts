@@ -3,11 +3,10 @@ import {ArcResizableMixinConstructor} from '@advanced-rest-client/arc-resizable-
 import {ArcOverlayManager} from './ArcOverlayManager.js';
 import {ArcOverlayBackdrop} from './ArcOverlayBackdrop.js';
 
-declare function ArcOverlayMixin<T extends new (...args: any[]) => {}>(base: T): T & ArcFitMixinConstructor & ArcResizableMixinConstructor & ArcOverlayMixinConstructor;
-export interface ArcOverlayMixinConstructor {
+export declare function ArcOverlayMixin<T extends new (...args: any[]) => {}>(base: T): T & ArcFitMixinConstructor & ArcResizableMixinConstructor & ArcOverlayMixinConstructor;
+export declare interface ArcOverlayMixinConstructor {
   new(...args: any[]): ArcOverlayMixin;
 }
-
 
 /**
  * This mixin is a port of [IronOverlayBehavior](https://github.com/PolymerElements/iron-overlay-behavior)
@@ -68,7 +67,7 @@ export interface ArcOverlayMixinConstructor {
  * }
  * ```
  */
-interface ArcOverlayMixin {
+export declare interface ArcOverlayMixin {
   /**
    * True if the overlay is currently displayed.
    */
@@ -295,6 +294,3 @@ interface ArcOverlayMixin {
    */
   __restoreScrollPosition(): void;
 }
-
-export {ArcOverlayMixinConstructor};
-export {ArcOverlayMixin};
