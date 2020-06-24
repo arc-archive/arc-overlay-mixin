@@ -285,3 +285,24 @@
 * fixing type definition for the mixin [4296baa](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/4296baac9fe9fe34c157342d2de23b8b15bb73ec) by Pawel
 
 
+<a name="1.1.4"></a>
+## [1.1.4](https://github.com/advanced-rest-client/arc-overlay-mixin/compare/1.1.2...1.1.4) (2020-06-24)
+
+### Build
+
+* bumping version [8971582](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/8971582bb4f3d0cea3c26d34d7a4447fa58178b7) by Pawel
+
+
+### Update
+
+* [ci skip] automated merge master->stage. syncing main branches [e55245f](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/e55245f4d15d95d09405dbff81e09bd9bf721e41) by Ci agent
+* adding export to mixing constructor type declaration [ff23a30](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/ff23a305fc023893c9ee31155cbfddeefff3dc78) by Pawel
+* updating dev dependencies [25b2805](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/25b2805a3b826a86a42c96c8245c7a7659d14de5) by Pawel
+* [ci skip] automated merge master->stage. syncing main branches [0019017](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/0019017338dd84765d981b69dd3a8585999baaea) by Ci agent
+
+
+### Bug Fixes
+
+* fixing types declaration [352735f](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/352735feab0cf05234c21699a6a31b820ef70ab1) by Pawel
+
+
