@@ -1,7 +1,7 @@
 {
   "name": "@advanced-rest-client/arc-overlay-mixin",
   "description": "arc-overlay-mixin is a port of iron-overlay-behavior that works with web components",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "license": "Apache-2.0",
   "main": "index.js",
   "module": "index.js",
@@ -41,7 +41,7 @@
     "test:sl": "karma start karma.sl.config.js --compatibility auto --coverage"
   },
   "dependencies": {
-    "@advanced-rest-client/arc-fit-mixin": "^1.1.0",
+    "@advanced-rest-client/arc-fit-mixin": "^1.2.0",
     "@advanced-rest-client/arc-resizable-mixin": "^1.1.0",
     "@open-wc/dedupe-mixin": "^1.2.17",
     "lit-html": "^1.2.1",
