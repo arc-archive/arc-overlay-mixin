@@ -326,3 +326,20 @@
 * fixing types declaration [352735f](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/352735feab0cf05234c21699a6a31b820ef70ab1) by Pawel
 
 
+<a name="1.1.6"></a>
+## [1.1.6](https://github.com/advanced-rest-client/arc-overlay-mixin/compare/1.1.4...1.1.6) (2020-10-02)
+
+### Build
+
+* bumpiong version [b1a40ff](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/b1a40ff5b3015e9ba87d92b468521ba487115007) by Pawel
+* bump version [83cfd51](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/83cfd512f40a98b31bce8598eb7f2c02f12c3e00) by Carolina Wright
+
+
+### Update
+
+* minor refactor, updating types [f8fde41](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/f8fde41845f96b37ca1ed53621e14a3c2e26ad5c) by Pawel
+* [ci skip] automated merge master->stage. syncing main branches [3989e0f](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/3989e0fb0cf16074be05e8bca4435d93a04d576f) by Ci agent
+* bump arc-fit-mixin dependency [848fd49](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/848fd498a27a586f49ada84cde0d3fac1ffc8f17) by Carolina Wright
+* [ci skip] automated merge master->stage. syncing main branches [08fb513](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/08fb513b90abfa4cb3695581b2e6518a6aba39ab) by Ci agent
+
+
