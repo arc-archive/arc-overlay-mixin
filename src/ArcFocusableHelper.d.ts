@@ -1,10 +1,9 @@
-export {ArcFocusablesHelper};
 
-declare class ArcFocusablesHelper {
+export declare class ArcFocusableHelper {
 
   /**
    * Returns a sorted array of tabbable nodes, including the root node.
-   * It searches the tabbable nodes in the light and shadow dom of the chidren,
+   * It searches the tabbable nodes in the light and shadow dom of the children,
    * sorting the result by tabindex.
    */
   getTabbableNodes(node: Node): HTMLElement[];

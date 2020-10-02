@@ -1,4 +1,7 @@
+/* eslint-disable no-plusplus */
+/* eslint-disable no-shadow */
 import { fixture, assert, nextFrame } from '@open-wc/testing';
+// @ts-ignore
 import sinon from 'sinon/pkg/sinon-esm.js';
 import { pressAndReleaseKeyOn, tap, focus } from '@polymer/iron-test-helpers/mock-interactions.js';
 import { ArcOverlayManager } from '../arc-overlay-manager.js';
@@ -7,6 +10,9 @@ import './test-overlay.js';
 import './test-overlay2.js';
 import './test-buttons.js';
 import './test-menu-button.js';
+
+/** @typedef {import('./test-overlay').TestOverlay} TestOverlay */
+/** @typedef {import('./test-menu-button').TestMenuButton} TestMenuButton */
 
 const s = document.createElement('style');
 s.type = 'text/css';
@@ -27,28 +33,37 @@ i.id = 'focusInput';
 i.placeholder = 'focus input';
 document.body.appendChild(i);
 
-describe('ArcOverlayMixin', function() {
+describe('ArcOverlayMixin', () => {
+  /**
+   * @returns {Promise<TestOverlay>}
+   */
   async function basicFixture() {
-    return (await fixture(`<test-overlay>
+    return (fixture(`<test-overlay>
       Basic Overlay
     </test-overlay>`));
   }
-
+  /**
+   * @returns {Promise<TestOverlay>}
+   */
   async function openedFixture() {
-    return (await fixture(`<test-overlay opened>
+    return (fixture(`<test-overlay opened>
       Basic Overlay
     </test-overlay>`));
   }
-
+  /**
+   * @returns {Promise<TestOverlay>}
+   */
   async function autofocusFixture() {
-    return (await fixture(`<test-overlay>
+    return (fixture(`<test-overlay>
       Autofocus
       <button autofocus>button</button>
     </test-overlay>`));
   }
-
+  /**
+   * @returns {Promise<TestOverlay>}
+   */
   async function focusablesFixture() {
-    return (await fixture(`
+    return (fixture(`
     <test-overlay tabindex="-1">
       <h2>Focusables (no tabindex)</h2>
       <div>
@@ -76,18 +91,22 @@ describe('ArcOverlayMixin', function() {
       <button class="focusable1">1</button>
     </test-overlay2>`));
   }
-
+  /**
+   * @returns {Promise<TestOverlay>}
+   */
   async function backdropFixture() {
-    return (await fixture(`<test-overlay withbackdrop>
+    return (fixture(`<test-overlay withbackdrop>
       Overlay with backdrop
       <input disabled>
       <input>
       <input disabled>
     </test-overlay>`));
   }
-
+  /**
+   * @returns {Promise<TestOverlay>}
+   */
   async function multipleFixture() {
-    return (await fixture(`<test-overlay class="overlay-1">
+    return (fixture(`<test-overlay class="overlay-1">
       Test overlay 1
     </test-overlay>
     <test-overlay class="overlay-2">
@@ -98,11 +117,13 @@ describe('ArcOverlayMixin', function() {
       Other overlay 3
     </test-overlay2>`));
   }
-
+  /**
+   * @returns {Promise<TestMenuButton>}
+   */
   async function composedFixture() {
-    return (await fixture(`<test-menu-button></test-menu-button>`));
+    return (fixture(`<test-menu-button></test-menu-button>`));
   }
-
+  
   function runAfterOpen(overlay, callback) {
     overlay.addEventListener('overlay-opened', callback);
     overlay.open();
@@ -113,14 +134,14 @@ describe('ArcOverlayMixin', function() {
     overlay.close();
   }
 
-  describe('basic overlay', function() {
+  describe('basic overlay', () => {
     let overlay;
     beforeEach(async () => {
       overlay = await basicFixture();
       await nextFrame();
     });
 
-    it('overlay starts hidden', function() {
+    it('overlay starts hidden', () => {
       assert.isFalse(overlay.opened, 'overlay starts closed');
       assert.equal(
           getComputedStyle(overlay).display, 'none', 'overlay starts hidden');
@@ -134,22 +155,24 @@ describe('ArcOverlayMixin', function() {
       // The overlay is ready at this point, but not yet attached.
       const spy = sinon.spy(overlay, '_renderOpened');
       // This triggers _openedChanged.
+      // @ts-ignore
       overlay.opened = true;
       // Wait long enough for requestAnimationFrame callback.
       await nextFrame();
       assert.isFalse(spy.called, '_renderOpened not called');
       // Because not attached yet, overlay should not be the current overlay!
       assert.isNotOk(
+          // @ts-ignore
           overlay._manager.currentOverlay(), 'currentOverlay not set');
     });
 
-    it('overlay open/close events', function(done) {
+    it('overlay open/close events', (done) => {
       let nevents = 0;
-      overlay.addEventListener('overlay-opened', function() {
+      overlay.addEventListener('overlay-opened', () => {
         nevents += 1;
         overlay.opened = false;
       });
-      overlay.addEventListener('overlay-closed', function() {
+      overlay.addEventListener('overlay-closed', () => {
         nevents += 1;
         assert.equal(nevents, 2, 'opened and closed events fired');
         done();
@@ -157,13 +180,13 @@ describe('ArcOverlayMixin', function() {
       overlay.opened = true;
     });
 
-    it('overlay legacy iron- open/close events', function(done) {
+    it('overlay legacy iron- open/close events', (done) => {
       let nevents = 0;
-      overlay.addEventListener('iron-overlay-opened', function() {
+      overlay.addEventListener('iron-overlay-opened', () => {
         nevents += 1;
         overlay.opened = false;
       });
-      overlay.addEventListener('iron-overlay-closed', function() {
+      overlay.addEventListener('iron-overlay-closed', () => {
         nevents += 1;
         assert.equal(nevents, 2, 'opened and closed events fired');
         done();
@@ -171,23 +194,23 @@ describe('ArcOverlayMixin', function() {
       overlay.opened = true;
     });
 
-    it('overlay opened-changed event', function(done) {
-      overlay.addEventListener('opened-changed', function() {
+    it('overlay opened-changed event', (done) => {
+      overlay.addEventListener('opened-changed', () => {
         done();
       });
       overlay.opened = true;
     });
 
-    it('open() refits overlay only once', function(done) {
+    it('open() refits overlay only once', (done) => {
       const spy = sinon.spy(overlay, 'refit');
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         assert.equal(spy.callCount, 1, 'overlay did refit only once');
         done();
       });
     });
 
-    it('open overlay refits on iron-resize', function(done) {
-      runAfterOpen(overlay, function() {
+    it('open overlay refits on iron-resize', (done) => {
+      runAfterOpen(overlay, () => {
         const spy = sinon.spy(overlay, 'refit');
         overlay.dispatchEvent(new CustomEvent('iron-resize', {
           composed: true,
@@ -201,7 +224,7 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('basic overlay', function() {
+  describe('basic overlay', () => {
     async function waitTimeout() {
       return new Promise((resolve) => {
         setTimeout(() => resolve());
@@ -217,14 +240,14 @@ describe('ArcOverlayMixin', function() {
       await waitTimeout();
     });
 
-    it('overlay starts hidden', function() {
+    it('overlay starts hidden', () => {
       assert.isFalse(overlay.opened, 'overlay starts closed');
       assert.equal(
           getComputedStyle(overlay).display, 'none', 'overlay starts hidden');
     });
 
-    it('_renderOpened called only after is attached', function(done) {
-      const overlay = document.createElement('test-overlay');
+    it('_renderOpened called only after is attached', (done) => {
+      const overlay = /** @type TestOverlay */ (document.createElement('test-overlay'));
       // The overlay is ready at this point, but not yet attached.
       const spy = sinon.spy(overlay, '_renderOpened');
       // This triggers _openedChanged.
@@ -239,13 +262,13 @@ describe('ArcOverlayMixin', function() {
       }, 100);
     });
 
-    it('overlay open/close events', function(done) {
+    it('overlay open/close events', (done) => {
       let nevents = 0;
-      overlay.addEventListener('overlay-opened', function() {
+      overlay.addEventListener('overlay-opened', () => {
         nevents += 1;
         overlay.opened = false;
       });
-      overlay.addEventListener('overlay-closed', function() {
+      overlay.addEventListener('overlay-closed', () => {
         nevents += 1;
         assert.equal(nevents, 2, 'opened and closed events fired');
         done();
@@ -253,13 +276,13 @@ describe('ArcOverlayMixin', function() {
       overlay.opened = true;
     });
 
-    it('overlay legacy iron- open/close events', function(done) {
+    it('overlay legacy iron- open/close events', (done) => {
       let nevents = 0;
-      overlay.addEventListener('iron-overlay-opened', function() {
+      overlay.addEventListener('iron-overlay-opened', () => {
         nevents += 1;
         overlay.opened = false;
       });
-      overlay.addEventListener('iron-overlay-closed', function() {
+      overlay.addEventListener('iron-overlay-closed', () => {
         nevents += 1;
         assert.equal(nevents, 2, 'opened and closed events fired');
         done();
@@ -267,16 +290,16 @@ describe('ArcOverlayMixin', function() {
       overlay.opened = true;
     });
 
-    it('open() refits overlay only once', function(done) {
+    it('open() refits overlay only once', (done) => {
       const spy = sinon.spy(overlay, 'refit');
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         assert.equal(spy.callCount, 1, 'overlay did refit only once');
         done();
       });
     });
 
-    it('open overlay refits on iron-resize', function(done) {
-      runAfterOpen(overlay, function() {
+    it('open overlay refits on iron-resize', (done) => {
+      runAfterOpen(overlay, () => {
         const spy = sinon.spy(overlay, 'refit');
         overlay.dispatchEvent(new CustomEvent('iron-resize', {
           composed: true,
@@ -289,7 +312,7 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('closed overlay does not refit on iron-resize', function(done) {
+    it('closed overlay does not refit on iron-resize', (done) => {
       const spy = sinon.spy(overlay, 'refit');
       overlay.dispatchEvent(new CustomEvent('iron-resize', {
         composed: true,
@@ -301,27 +324,27 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('open() triggers iron-resize', function(done) {
+    it('open() triggers iron-resize', (done) => {
       let callCount = 0;
       // Ignore iron-resize triggered by window resize.
-      window.addEventListener('resize', function() {
+      window.addEventListener('resize', () => {
         callCount--;
       }, true);
-      overlay.addEventListener('iron-resize', function() {
+      overlay.addEventListener('iron-resize', () => {
         callCount++;
       });
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         assert.isAbove(
             callCount, 0, 'iron-resize called before iron-overlay-opened');
         done();
       });
     });
 
-    it('close() triggers iron-resize', function(done) {
-      runAfterOpen(overlay, function() {
+    it('close() triggers iron-resize', (done) => {
+      runAfterOpen(overlay, () => {
         const spy = sinon.stub();
         overlay.addEventListener('iron-resize', spy);
-        runAfterClose(overlay, function() {
+        runAfterClose(overlay, () => {
           assert.equal(
               spy.callCount,
               1,
@@ -331,13 +354,13 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('closed overlay does not trigger iron-resize when its content changes', function(done) {
+    it('closed overlay does not trigger iron-resize when its content changes', (done) => {
       // Ignore iron-resize triggered by window resize.
       let callCount = 0;
-      window.addEventListener('resize', function() {
+      window.addEventListener('resize', () => {
         callCount--;
       }, true);
-      overlay.addEventListener('iron-resize', function() {
+      overlay.addEventListener('iron-resize', () => {
         callCount++;
       });
       overlay.appendChild(document.createElement('div'));
@@ -348,8 +371,8 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('open overlay triggers iron-resize when its content changes', function(done) {
-      runAfterOpen(overlay, function() {
+    it('open overlay triggers iron-resize when its content changes', (done) => {
+      runAfterOpen(overlay, () => {
         const spy = sinon.stub();
         overlay.addEventListener('iron-resize', spy);
         overlay.appendChild(document.createElement('div'));
@@ -361,7 +384,7 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('close an overlay quickly after open', function(done) {
+    it('close an overlay quickly after open', (done) => {
       // first, open the overlay
       overlay.open();
       setTimeout(() => {
@@ -374,19 +397,19 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('clicking an overlay does not close it', function(done) {
-      runAfterOpen(overlay, function() {
+    it('clicking an overlay does not close it', (done) => {
+      runAfterOpen(overlay, () => {
         const spy = sinon.stub();
         overlay.addEventListener('overlay-closed', spy);
         overlay.click();
-        setTimeout(function() {
+        setTimeout(() => {
           assert.isFalse(spy.called, 'overlay-closed should not fire');
           done();
         }, 10);
       });
     });
 
-    it('open overlay on mousedown does not close it', function(done) {
+    it('open overlay on mousedown does not close it', (done) => {
       const btn = document.createElement('button');
       btn.addEventListener('mousedown', overlay.open.bind(overlay));
       document.body.appendChild(btn);
@@ -399,15 +422,15 @@ describe('ArcOverlayMixin', function() {
 
       document.body.removeChild(btn);
       assert.isTrue(overlay.opened, 'overlay opened');
-      setTimeout(function() {
+      setTimeout(() => {
         assert.isTrue(overlay.opened, 'overlay is still open');
         done();
       }, 10);
     });
 
-    it('clicking outside fires overlay-canceled', function(done) {
-      runAfterOpen(overlay, function() {
-        overlay.addEventListener('overlay-canceled', function(event) {
+    it('clicking outside fires overlay-canceled', (done) => {
+      runAfterOpen(overlay, () => {
+        overlay.addEventListener('overlay-canceled', (event) => {
           assert.equal(
               event.detail.target,
               document.body,
@@ -418,9 +441,9 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('clicking outside fires legacy iron-overlay-canceled', function(done) {
-      runAfterOpen(overlay, function() {
-        overlay.addEventListener('iron-overlay-canceled', function(event) {
+    it('clicking outside fires legacy iron-overlay-canceled', (done) => {
+      runAfterOpen(overlay, () => {
+        overlay.addEventListener('iron-overlay-canceled', (event) => {
           assert.equal(
               event.detail.target,
               document.body,
@@ -431,9 +454,9 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('clicking outside closes the overlay', function(done) {
-      runAfterOpen(overlay, function() {
-        overlay.addEventListener('overlay-closed', function(event) {
+    it('clicking outside closes the overlay', (done) => {
+      runAfterOpen(overlay, () => {
+        overlay.addEventListener('overlay-closed', (event) => {
           assert.isTrue(event.detail.canceled, 'overlay is canceled');
           done();
         });
@@ -441,15 +464,15 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('overlay-canceled event can be prevented', function(done) {
-      runAfterOpen(overlay, function() {
-        overlay.addEventListener('overlay-canceled', function(event) {
+    it('overlay-canceled event can be prevented', (done) => {
+      runAfterOpen(overlay, () => {
+        overlay.addEventListener('overlay-canceled', (event) => {
           event.preventDefault();
         });
         const spy = sinon.stub();
         overlay.addEventListener('overlay-closed', spy);
         document.body.click();
-        setTimeout(function() {
+        setTimeout(() => {
           assert.isTrue(overlay.opened, 'overlay is still open');
           assert.isFalse(spy.called, 'overlay-closed not fired');
           done();
@@ -457,15 +480,15 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('legacy iron-overlay-canceled event can be prevented', function(done) {
-      runAfterOpen(overlay, function() {
-        overlay.addEventListener('iron-overlay-canceled', function(event) {
+    it('legacy iron-overlay-canceled event can be prevented', (done) => {
+      runAfterOpen(overlay, () => {
+        overlay.addEventListener('iron-overlay-canceled', (event) => {
           event.preventDefault();
         });
         const spy = sinon.stub();
         overlay.addEventListener('iron-overlay-closed', spy);
         document.body.click();
-        setTimeout(function() {
+        setTimeout(() => {
           assert.isTrue(overlay.opened, 'overlay is still open');
           assert.isFalse(spy.called, 'iron-overlay-closed not fired');
           done();
@@ -473,60 +496,63 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('cancel an overlay with esc key', function(done) {
-      runAfterOpen(overlay, function() {
-        overlay.addEventListener('overlay-canceled', function(event) {
+    it('cancel an overlay with esc key', (done) => {
+      runAfterOpen(overlay, () => {
+        overlay.addEventListener('overlay-canceled', (event) => {
           assert.equal(event.detail.type, 'keydown');
           done();
         });
+        // @ts-ignore
         pressAndReleaseKeyOn(document, 27, '', 'Escape');
       });
     });
 
-    it('close an overlay with esc key', function(done) {
-      runAfterOpen(overlay, function() {
-        overlay.addEventListener('overlay-closed', function(event) {
+    it('close an overlay with esc key', (done) => {
+      runAfterOpen(overlay, () => {
+        overlay.addEventListener('overlay-closed', (event) => {
           assert.isTrue(event.detail.canceled, 'overlay is canceled');
           done();
         });
+        // @ts-ignore
         pressAndReleaseKeyOn(document, 27, '', 'Escape');
       });
     });
 
-    it('nocancelonoutsideclick property', function(done) {
+    it('nocancelonoutsideclick property', (done) => {
       overlay.noCancelOnOutsideClick = true;
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         const spy = sinon.stub();
         overlay.addEventListener('overlay-closed', spy);
         tap(document.body);
-        setTimeout(function() {
+        setTimeout(() => {
           assert.isFalse(spy.called, 'overlay-closed should not fire');
           done();
         }, 10);
       });
     });
 
-    it('nocancelonesckey property', function(done) {
+    it('nocancelonesckey property', (done) => {
       overlay.noCancelOnEscKey = true;
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         const spy = sinon.stub();
         overlay.addEventListener('overlay-closed', spy);
+        // @ts-ignore
         pressAndReleaseKeyOn(document, 27);
-        setTimeout(function() {
+        setTimeout(() => {
           assert.isFalse(spy.called, 'overlay-cancel should not fire');
           done();
         }, 10);
       });
     });
 
-    it('with-backdrop sets tabindex=-1 and removes it', function() {
+    it('with-backdrop sets tabindex=-1 and removes it', () => {
       overlay.withBackdrop = true;
       assert.equal(overlay.getAttribute('tabindex'), '-1', 'tabindex is -1');
       overlay.withBackdrop = false;
       assert.isFalse(overlay.hasAttribute('tabindex'), 'tabindex removed');
     });
 
-    it('with-backdrop does not override tabindex if already set', function() {
+    it('with-backdrop does not override tabindex if already set', () => {
       overlay.setAttribute('tabindex', '1');
       overlay.withBackdrop = true;
       assert.equal(overlay.getAttribute('tabindex'), '1', 'tabindex is 1');
@@ -535,14 +561,14 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('keyboard event listener', function() {
+  describe('keyboard event listener', () => {
     let overlay;
-    const preventKeyDown = function(event) {
+    const preventKeyDown = (event) => {
       event.preventDefault();
       event.stopPropagation();
     };
 
-    before(function() {
+    before(() => {
       // Worst case scenario: listener with useCapture = true that prevents &
       // stops propagation added before the overlay is initialized.
       document.addEventListener('keydown', preventKeyDown, true);
@@ -553,34 +579,35 @@ describe('ArcOverlayMixin', function() {
       await nextFrame();
     });
 
-    after(function() {
+    after(() => {
       document.removeEventListener('keydown', preventKeyDown, true);
     });
 
-    it('cancel an overlay with esc key even if event is prevented by other listeners', function(done) {
-      runAfterOpen(overlay, function() {
-        overlay.addEventListener('overlay-canceled', function() {
+    it('cancel an overlay with esc key even if event is prevented by other listeners', (done) => {
+      runAfterOpen(overlay, () => {
+        overlay.addEventListener('overlay-canceled', () => {
           done();
         });
+        // @ts-ignore
         pressAndReleaseKeyOn(document, 27, '', 'Escape');
       });
     });
   });
 
-  describe('click event listener', function() {
+  describe('click event listener', () => {
     let overlay;
-    const preventTap = function(event) {
+    const preventTap = (event) => {
       event.preventDefault();
       event.stopPropagation();
     };
 
-    before(function() {
+    before(() => {
       // Worst case scenario: listener with useCapture = true that prevents &
       // stops propagation added before the overlay is initialized.
       document.body.addEventListener('click', preventTap);
     });
 
-    after(function() {
+    after(() => {
       document.removeEventListener('click', preventTap);
     });
 
@@ -589,9 +616,9 @@ describe('ArcOverlayMixin', function() {
       await nextFrame();
     });
 
-    it('cancel an overlay with tap outside even if event is prevented by other listeners', function(done) {
-      runAfterOpen(overlay, function() {
-        overlay.addEventListener('overlay-canceled', function() {
+    it('cancel an overlay with tap outside even if event is prevented by other listeners', (done) => {
+      runAfterOpen(overlay, () => {
+        overlay.addEventListener('overlay-canceled', () => {
           done();
         });
         tap(document.body);
@@ -599,14 +626,14 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('opened overlay', function() {
+  describe('opened overlay', () => {
     let overlay;
     beforeEach(async () => {
       overlay = await openedFixture();
     });
 
-    it('overlay open by default', function(done) {
-      overlay.addEventListener('overlay-opened', function() {
+    it('overlay open by default', (done) => {
+      overlay.addEventListener('overlay-opened', () => {
         assert.isTrue(overlay.opened, 'overlay starts opened');
         assert.notEqual(
             getComputedStyle(overlay).display, 'none', 'overlay starts showing');
@@ -614,8 +641,8 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('overlay positioned & sized properly', function(done) {
-      overlay.addEventListener('overlay-opened', function() {
+    it('overlay positioned & sized properly', (done) => {
+      overlay.addEventListener('overlay-opened', () => {
         const s = getComputedStyle(overlay);
         assert.closeTo(
             parseFloat(s.left),
@@ -632,7 +659,7 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('focus handling', function() {
+  describe('focus handling', () => {
     let overlay;
     beforeEach(async () => {
       // Ensure focus is set to document.body
@@ -641,8 +668,8 @@ describe('ArcOverlayMixin', function() {
       await nextFrame();
     });
 
-    it('node with autofocus is focused', function(done) {
-      runAfterOpen(overlay, function() {
+    it('node with autofocus is focused', (done) => {
+      runAfterOpen(overlay, () => {
         assert.equal(
             overlay.querySelector('[autofocus]'),
             document.activeElement,
@@ -651,9 +678,9 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('no-auto-focus will not focus node with autofocus', function(done) {
+    it('no-auto-focus will not focus node with autofocus', (done) => {
       overlay.noAutoFocus = true;
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         assert.notEqual(
             overlay.querySelector('[autofocus]'),
             document.activeElement,
@@ -669,11 +696,11 @@ describe('ArcOverlayMixin', function() {
           '<button autofocus> not immediately focused');
     });
 
-    it('no-cancel-on-outside-click property; focus stays on overlay when click outside', function(done) {
+    it('no-cancel-on-outside-click property; focus stays on overlay when click outside', (done) => {
       overlay.noCancelOnOutsideClick = true;
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         tap(document.body);
-        setTimeout(function() {
+        setTimeout(() => {
           assert.equal(
               overlay.querySelector('[autofocus]'),
               document.activeElement,
@@ -683,13 +710,13 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('with-backdrop traps the focus within the overlay', function(done) {
+    it('with-backdrop traps the focus within the overlay', (done) => {
       const focusSpy = sinon.stub();
       const button = document.createElement('button');
       document.body.appendChild(button);
       button.addEventListener('focus', focusSpy, true);
       overlay.withBackdrop = true;
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         // Try to steal the focus
         focus(button);
         assert.equal(
@@ -703,15 +730,16 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('overlay with-backdrop and 1 focusable: prevent TAB and trap the focus', function(done) {
+    it('overlay with-backdrop and 1 focusable: prevent TAB and trap the focus', (done) => {
       overlay.withBackdrop = true;
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         // 1ms timeout needed by IE10 to have proper focus switching.
-        setTimeout(function() {
+        setTimeout(() => {
           // Spy keydown.
           const tabSpy = sinon.spy();
           document.addEventListener('keydown', tabSpy);
           // Simulate TAB.
+          // @ts-ignore
           pressAndReleaseKeyOn(document, 9, '', 'Tab');
           assert.equal(
               overlay.querySelector('[autofocus]'),
@@ -728,18 +756,19 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('empty overlay with-backdrop: prevent TAB and trap the focus', function(done) {
+    it('empty overlay with-backdrop: prevent TAB and trap the focus', (done) => {
       autofocusFixture()
       .then((el) => {
         overlay = el;
         overlay.withBackdrop = true;
-        runAfterOpen(overlay, function() {
+        runAfterOpen(overlay, () => {
           // 1ms timeout needed by IE10 to have proper focus switching.
-          setTimeout(function() {
+          setTimeout(() => {
             // Spy keydown.
             const tabSpy = sinon.spy();
             document.addEventListener('keydown', tabSpy);
             // Simulate TAB.
+            // @ts-ignore
             pressAndReleaseKeyOn(document, 9, '', 'Tab');
             // Cleanup.
             document.removeEventListener('keydown', tabSpy);
@@ -755,7 +784,7 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('focusable nodes', function() {
+  describe('focusable nodes', () => {
     let overlay;
     let overlayWithTabIndex;
     let overlayFocusableNodes;
@@ -766,8 +795,8 @@ describe('ArcOverlayMixin', function() {
       overlayFocusableNodes = overlayWithTabIndex.nextElementSibling;
     });
 
-    it('_focusableNodes returns nodes that are focusable', function(done) {
-      runAfterOpen(overlay, function() {
+    it('_focusableNodes returns nodes that are focusable', (done) => {
+      runAfterOpen(overlay, () => {
         const focusableNodes = overlay._focusableNodes;
         assert.equal(focusableNodes.length, 3, '3 nodes are focusable');
         assert.equal(
@@ -780,8 +809,8 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('_focusableNodes includes overlay if it has a valid tabindex', function(done) {
-      runAfterOpen(overlay, function() {
+    it('_focusableNodes includes overlay if it has a valid tabindex', (done) => {
+      runAfterOpen(overlay, () => {
         overlay.setAttribute('tabindex', '0');
         const focusableNodes = overlay._focusableNodes;
         assert.equal(focusableNodes.length, 4, '4 focusable nodes');
@@ -791,8 +820,8 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('_focusableNodes respects the tabindex order', function(done) {
-      runAfterOpen(overlayWithTabIndex, function() {
+    it('_focusableNodes respects the tabindex order', (done) => {
+      runAfterOpen(overlayWithTabIndex, () => {
         const focusableNodes = overlayWithTabIndex._focusableNodes;
         assert.equal(focusableNodes.length, 6, '6 nodes are focusable');
         assert.equal(
@@ -817,8 +846,8 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('_focusableNodes can be overridden', function(done) {
-      runAfterOpen(overlayFocusableNodes, function() {
+    it('_focusableNodes can be overridden', (done) => {
+      runAfterOpen(overlayFocusableNodes, () => {
         // It has 1 focusable in the light dom, and 2 in the shadow dom.
         const focusableNodes = overlayFocusableNodes._focusableNodes;
         assert.equal(focusableNodes.length, 2, 'length ok');
@@ -829,18 +858,19 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('with-backdrop: TAB & Shift+TAB wrap focus', function(done) {
+    it('with-backdrop: TAB & Shift+TAB wrap focus', (done) => {
       overlay.withBackdrop = true;
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         const focusableNodes = overlay._focusableNodes;
         // 1ms timeout needed by IE10 to have proper focus switching.
-        setTimeout(function() {
+        setTimeout(() => {
           // Go to last element.
           focusableNodes[focusableNodes.length - 1].focus();
           // Spy keydown.
           const tabSpy = sinon.spy();
           document.addEventListener('keydown', tabSpy);
           // Simulate TAB.
+          // @ts-ignore
           pressAndReleaseKeyOn(document, 9, '', 'Tab');
           assert.equal(
               focusableNodes[0],
@@ -851,6 +881,7 @@ describe('ArcOverlayMixin', function() {
               tabSpy.getCall(0).args[0].defaultPrevented,
               'keydown default prevented');
           // Simulate Shift+TAB.
+          // @ts-ignore
           pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
           assert.equal(
               focusableNodes[focusableNodes.length - 1],
@@ -867,21 +898,23 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('with-backdrop: TAB & Shift+TAB wrap focus respecting tabindex', function(done) {
+    it('with-backdrop: TAB & Shift+TAB wrap focus respecting tabindex', (done) => {
       overlayWithTabIndex.withBackdrop = true;
-      runAfterOpen(overlayWithTabIndex, function() {
+      runAfterOpen(overlayWithTabIndex, () => {
         const focusableNodes = overlayWithTabIndex._focusableNodes;
         // 1ms timeout needed by IE10 to have proper focus switching.
-        setTimeout(function() {
+        setTimeout(() => {
           // Go to last element.
           focusableNodes[focusableNodes.length - 1].focus();
           // Simulate TAB.
+          // @ts-ignore
           pressAndReleaseKeyOn(document, 9, '', 'Tab');
           assert.equal(
               focusableNodes[0],
               document.activeElement,
               'focus wrapped to first focusable');
           // Simulate Shift+TAB.
+          // @ts-ignore
           pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
           assert.equal(
               focusableNodes[focusableNodes.length - 1],
@@ -892,16 +925,17 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('with-backdrop: Shift+TAB after open wrap focus', function(done) {
+    it('with-backdrop: Shift+TAB after open wrap focus', (done) => {
       overlay.withBackdrop = true;
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         const focusableNodes = overlay._focusableNodes;
         // 1ms timeout needed by IE10 to have proper focus switching.
-        setTimeout(function() {
+        setTimeout(() => {
           // Spy keydown.
           const tabSpy = sinon.spy();
           document.addEventListener('keydown', tabSpy);
           // Simulate Shift+TAB.
+          // @ts-ignore
           pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
           assert.equal(
               focusableNodes[focusableNodes.length - 1],
@@ -918,12 +952,12 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('with-backdrop: after open, update last focusable node and then Shift+TAB', function(done) {
+    it('with-backdrop: after open, update last focusable node and then Shift+TAB', (done) => {
       overlay.withBackdrop = true;
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         const focusableNodes = overlay._focusableNodes;
         // 1ms timeout needed by IE10 to have proper focus switching.
-        setTimeout(function() {
+        setTimeout(() => {
           // Before tabbing, make lastFocusable non-tabbable. This will make
           // the one before it (focusableNodes.length - 2), the new last
           // focusable node.
@@ -931,6 +965,7 @@ describe('ArcOverlayMixin', function() {
               'tabindex', '-1');
           overlay.invalidateTabbables();
           // Simulate Shift+TAB.
+          // @ts-ignore
           pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
           assert.equal(
               focusableNodes[focusableNodes.length - 2],
@@ -941,15 +976,16 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('with-backdrop: Shift+TAB wrap focus in shadowDOM', function(done) {
+    it('with-backdrop: Shift+TAB wrap focus in shadowDOM', (done) => {
       overlayFocusableNodes.withBackdrop = true;
-      runAfterOpen(overlayFocusableNodes, function() {
+      runAfterOpen(overlayFocusableNodes, () => {
         // 1ms timeout needed by IE10 to have proper focus switching.
-        setTimeout(function() {
+        setTimeout(() => {
           // Spy keydown.
           const tabSpy = sinon.spy();
           document.addEventListener('keydown', tabSpy);
           // Simulate Shift+TAB.
+          // @ts-ignore
           pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
           assert.equal(
               overlayFocusableNodes.shadowRoot.querySelector('#last'),
@@ -968,19 +1004,25 @@ describe('ArcOverlayMixin', function() {
     const testName =
         'with-backdrop: __firstFocusableNode and __lastFocusableNode are ' +
         'updated after pressing tab.';
-    it(testName, function(done) {
+    it(testName, (done) => {
       const TAB = 9;
       backdropFixture()
       .then((overlay) => {
         const inputs = overlay.querySelectorAll('input');
-        runAfterOpen(overlay, function() {
+        runAfterOpen(overlay, () => {
+          // @ts-ignore
           pressAndReleaseKeyOn(document, TAB, '', 'Tab');
+          // @ts-ignore
           assert.equal(overlay.__firstFocusableNode, inputs[1]);
+          // @ts-ignore
           assert.equal(overlay.__lastFocusableNode, inputs[1]);
           inputs[0].removeAttribute('disabled');
           inputs[2].removeAttribute('disabled');
+          // @ts-ignore
           pressAndReleaseKeyOn(document, TAB, '', 'Tab');
+          // @ts-ignore
           assert.equal(overlay.__firstFocusableNode, inputs[0]);
+          // @ts-ignore
           assert.equal(overlay.__lastFocusableNode, inputs[2]);
           done();
         });
@@ -988,13 +1030,13 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('ArcOverlayManager.deepActiveElement', function() {
-    it('handles document.body', function() {
+  describe('ArcOverlayManager.deepActiveElement', () => {
+    it('handles document.body', () => {
       document.body.focus();
       assert.equal(ArcOverlayManager.deepActiveElement, document.body);
     });
 
-    it('handles light dom', function() {
+    it('handles light dom', () => {
       const focusable = document.getElementById('focusInput');
       focusable.focus();
       assert.equal(
@@ -1002,32 +1044,34 @@ describe('ArcOverlayMixin', function() {
       focusable.blur();
     });
 
-    it('handles shadow dom', function() {
+    it('handles shadow dom', () => {
       const focusable = document.getElementById('buttons').shadowRoot.querySelector('#button0');
+      // @ts-ignore
       focusable.focus();
       assert.equal(ArcOverlayManager.deepActiveElement, focusable);
+      // @ts-ignore
       focusable.blur();
     });
   });
 
-  describe('restore-focus-on-close', function() {
+  describe('restore-focus-on-close', () => {
     let overlay;
     beforeEach(async () => {
       overlay = await autofocusFixture();
       overlay.restoreFocusOnClose = true;
     });
 
-    afterEach(function() {
+    afterEach(() => {
       // No matter what, return the focus to body!
       document.body.focus();
     });
 
-    it('does not return focus on close by default (restore-focus-on-close=false)', function(done) {
+    it('does not return focus on close by default (restore-focus-on-close=false)', (done) => {
       overlay.restoreFocusOnClose = false;
       const focusable = document.getElementById('focusInput');
       focusable.focus();
-      runAfterOpen(overlay, function() {
-        runAfterClose(overlay, function() {
+      runAfterOpen(overlay, () => {
+        runAfterClose(overlay, () => {
           assert.notEqual(
               ArcOverlayManager.deepActiveElement,
               focusable,
@@ -1037,11 +1081,11 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('overlay returns focus on close', function(done) {
+    it('overlay returns focus on close', (done) => {
       const focusable = document.getElementById('focusInput');
       focusable.focus();
-      runAfterOpen(overlay, function() {
-        runAfterClose(overlay, function() {
+      runAfterOpen(overlay, () => {
+        runAfterClose(overlay, () => {
           assert.equal(
               ArcOverlayManager.deepActiveElement,
               focusable,
@@ -1051,11 +1095,12 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('overlay returns focus on close (ShadowDOM)', function(done) {
+    it('overlay returns focus on close (ShadowDOM)', (done) => {
       const focusable = document.getElementById('buttons').shadowRoot.querySelector('#button0');
+      // @ts-ignore
       focusable.focus();
-      runAfterOpen(overlay, function() {
-        runAfterClose(overlay, function() {
+      runAfterOpen(overlay, () => {
+        runAfterClose(overlay, () => {
           assert.equal(
               ArcOverlayManager.deepActiveElement,
               focusable,
@@ -1065,13 +1110,15 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('avoids restoring focus if focus changed', function(done) {
+    it('avoids restoring focus if focus changed', (done) => {
       const button0 = document.getElementById('buttons').shadowRoot.querySelector('#button0');
       const button1 = document.getElementById('buttons').shadowRoot.querySelector('#button1');
+      // @ts-ignore
       button0.focus();
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
+        // @ts-ignore
         button1.focus();
-        runAfterClose(overlay, function() {
+        runAfterClose(overlay, () => {
           assert.equal(
               ArcOverlayManager.deepActiveElement,
               button1,
@@ -1081,12 +1128,12 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('focus restored if overlay detached before closing is done', function(done) {
+    it('focus restored if overlay detached before closing is done', (done) => {
       const focusable = document.getElementById('focusInput');
       focusable.focus();
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         // Close overlay and remove it from the DOM.
-        runAfterClose(overlay, function() {
+        runAfterClose(overlay, () => {
           assert.equal(
               ArcOverlayManager.deepActiveElement,
               focusable,
@@ -1098,16 +1145,16 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('overlay with backdrop', function() {
+  describe('overlay with backdrop', () => {
     let overlay;
     beforeEach(async () => {
       overlay = await backdropFixture();
       await nextFrame();
     });
 
-    it('backdrop is opened when overlay is opened', function(done) {
+    it('backdrop is opened when overlay is opened', (done) => {
       assert.isOk(overlay.backdropElement, 'backdrop is defined');
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         assert.isTrue(overlay.backdropElement.opened, 'backdrop is opened');
         assert.isOk(
             overlay.backdropElement.parentNode,
@@ -1116,8 +1163,8 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('backdrop appears behind the overlay', function(done) {
-      runAfterOpen(overlay, function() {
+    it('backdrop appears behind the overlay', (done) => {
+      runAfterOpen(overlay, () => {
         const styleZ = parseInt(window.getComputedStyle(overlay).zIndex, 10);
         const backdropStyleZ =
             parseInt(window.getComputedStyle(overlay.backdropElement).zIndex, 10);
@@ -1127,9 +1174,9 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('backdrop is removed when overlay is closed', function(done) {
-      runAfterOpen(overlay, function() {
-        runAfterClose(overlay, function() {
+    it('backdrop is removed when overlay is closed', (done) => {
+      runAfterOpen(overlay, () => {
+        runAfterClose(overlay, () => {
           assert.isFalse(overlay.backdropElement.opened, 'backdrop is closed');
           assert.isNotOk(
             overlay.backdropElement.parentNode,
@@ -1143,8 +1190,8 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('backdrop is removed when the element is removed from DOM', function(done) {
-      runAfterOpen(overlay, function() {
+    it('backdrop is removed when the element is removed from DOM', (done) => {
+      runAfterOpen(overlay, () => {
         overlay.parentNode.removeChild(overlay);
         // Ensure detached is executed.
         nextFrame().then(() => {
@@ -1163,13 +1210,13 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('manager.getBackdrops() updated on opened changes', function(done) {
-      runAfterOpen(overlay, function() {
+    it('manager.getBackdrops() updated on opened changes', (done) => {
+      runAfterOpen(overlay, () => {
         assert.equal(
             ArcOverlayManager.getBackdrops().length,
             1,
             'overlay added to manager backdrops');
-        runAfterClose(overlay, function() {
+        runAfterClose(overlay, () => {
           assert.equal(
               ArcOverlayManager.getBackdrops().length,
               0,
@@ -1179,8 +1226,8 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('updating with-backdrop to false closes backdrop', function(done) {
-      runAfterOpen(overlay, function() {
+    it('updating with-backdrop to false closes backdrop', (done) => {
+      runAfterOpen(overlay, () => {
         overlay.withBackdrop = false;
         assert.isFalse(overlay.backdropElement.opened, 'backdrop is closed');
         assert.isNotObject(
@@ -1190,9 +1237,9 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('backdrop is removed when toggling overlay opened', function(done) {
+    it('backdrop is removed when toggling overlay opened', (done) => {
       overlay.open();
-      runAfterClose(overlay, function() {
+      runAfterClose(overlay, () => {
         assert.isFalse(overlay.backdropElement.opened, 'backdrop is closed');
         assert.isNotOk(
             overlay.backdropElement.parentNode,
@@ -1201,10 +1248,10 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('withBackdrop = false does not prevent click outside event', function(done) {
+    it('withBackdrop = false does not prevent click outside event', (done) => {
       overlay.withBackdrop = false;
-      runAfterOpen(overlay, function() {
-        overlay.addEventListener('overlay-canceled', function(event) {
+      runAfterOpen(overlay, () => {
+        overlay.addEventListener('overlay-canceled', (event) => {
           assert.isFalse(
               event.detail.defaultPrevented, 'click event not prevented');
           done();
@@ -1214,7 +1261,7 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('multiple overlays', function() {
+  describe('multiple overlays', () => {
     let overlay1;
     let overlay2;
 
@@ -1224,9 +1271,9 @@ describe('ArcOverlayMixin', function() {
       await nextFrame();
     });
 
-    it('new overlays appear on top', function(done) {
-      runAfterOpen(overlay1, function() {
-        runAfterOpen(overlay2, function() {
+    it('new overlays appear on top', (done) => {
+      runAfterOpen(overlay1, () => {
+        runAfterOpen(overlay2, () => {
           const styleZ = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
           const styleZ1 = parseInt(window.getComputedStyle(overlay2).zIndex, 10);
           assert.isTrue(styleZ1 > styleZ, 'overlay2 has higher z-index than overlay1');
@@ -1235,9 +1282,10 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('ESC closes only the top overlay', function(done) {
-      runAfterOpen(overlay1, function() {
-        runAfterOpen(overlay2, function() {
+    it('ESC closes only the top overlay', (done) => {
+      runAfterOpen(overlay1, () => {
+        runAfterOpen(overlay2, () => {
+          // @ts-ignore
           pressAndReleaseKeyOn(document, 27, '', 'Escape');
           assert.isFalse(overlay2.opened, 'overlay2 was closed');
           assert.isTrue(overlay1.opened, 'overlay1 is still opened');
@@ -1246,7 +1294,7 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('close an overlay in proximity to another overlay', function(done) {
+    it('close an overlay in proximity to another overlay', (done) => {
       // Open and close a separate overlay.
       overlay1.open();
       overlay1.close();
@@ -1254,15 +1302,15 @@ describe('ArcOverlayMixin', function() {
       overlay2.open();
       // Immediately close the first overlay.
       // Wait for infinite recursion, otherwise we win.
-      runAfterClose(overlay2, function() {
+      runAfterClose(overlay2, () => {
         done();
       });
     });
 
-    it('allow-click-through allows overlay below to handle click', function(done) {
+    it('allow-click-through allows overlay below to handle click', (done) => {
       overlay2.allowClickThrough = true;
-      runAfterOpen(overlay1, function() {
-        runAfterOpen(overlay2, function() {
+      runAfterOpen(overlay1, () => {
+        runAfterOpen(overlay2, () => {
           tap(document.body);
           assert.isFalse(overlay1.opened, 'overlay1 was closed');
           assert.isFalse(overlay2.opened, 'overlay2 was closed');
@@ -1271,11 +1319,11 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('allow-click-through and no-cancel-on-outside-click combo', function(done) {
+    it('allow-click-through and no-cancel-on-outside-click combo', (done) => {
       overlay2.allowClickThrough = true;
       overlay2.noCancelOnOutsideClick = true;
-      runAfterOpen(overlay1, function() {
-        runAfterOpen(overlay2, function() {
+      runAfterOpen(overlay1, () => {
+        runAfterOpen(overlay2, () => {
           tap(document.body);
           assert.isTrue(overlay2.opened, 'overlay2 still open');
           assert.isFalse(overlay1.opened, 'overlay1 was closed');
@@ -1285,7 +1333,7 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('Manager overlays in sync', function() {
+  describe('Manager overlays in sync', () => {
     let overlays;
     let overlay1;
     let overlay2;
@@ -1297,9 +1345,9 @@ describe('ArcOverlayMixin', function() {
       await nextFrame();
     });
 
-    it('no duplicates after attached', function(done) {
+    it('no duplicates after attached', (done) => {
       overlay1 = document.createElement('test-overlay');
-      runAfterOpen(overlay1, function() {
+      runAfterOpen(overlay1, () => {
         assert.equal(overlays.length, 1, 'correct count after open and attached');
         document.body.removeChild(overlay1);
         done();
@@ -1307,35 +1355,37 @@ describe('ArcOverlayMixin', function() {
       document.body.appendChild(overlay1);
     });
 
-    it('call open multiple times handled', function(done) {
+    it('call open multiple times handled', (done) => {
       overlay1.open();
       overlay1.open();
-      runAfterOpen(overlay1, function() {
+      runAfterOpen(overlay1, () => {
         assert.equal(overlays.length, 1, '1 overlay after open');
         done();
       });
     });
 
-    it('close handled', function(done) {
-      runAfterOpen(overlay1, function() {
-        runAfterClose(overlay1, function() {
+    it('close handled', (done) => {
+      runAfterOpen(overlay1, () => {
+        runAfterClose(overlay1, () => {
           assert.equal(overlays.length, 0, '0 overlays after close');
           done();
         });
       });
     });
 
-    it('open/close brings overlay on top', function(done) {
+    it('open/close brings overlay on top', (done) => {
       overlay1.open();
-      runAfterOpen(overlay2, function() {
+      runAfterOpen(overlay2, () => {
         assert.equal(overlays.indexOf(overlay1), 0, 'overlay1 at index 0');
         assert.equal(overlays.indexOf(overlay2), 1, 'overlay2 at index 1');
         overlay1.close();
-        runAfterOpen(overlay1, function() {
+        runAfterOpen(overlay1, () => {
           assert.equal(
               overlays.indexOf(overlay1), 1, 'overlay1 moved at index 1');
           assert.isAbove(
+              // eslint-disable-next-line radix
               parseInt(overlay1.style.zIndex),
+              // eslint-disable-next-line radix
               parseInt(overlay2.style.zIndex),
               'overlay1 on top of overlay2');
           done();
@@ -1344,7 +1394,7 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('z-ordering', function() {
+  describe('z-ordering', () => {
     let originalMinimumZ;
     let overlay1;
 
@@ -1354,32 +1404,32 @@ describe('ArcOverlayMixin', function() {
       await nextFrame();
     });
 
-    afterEach(function() {
+    afterEach(() => {
       ArcOverlayManager._minimumZ = originalMinimumZ;
     });
 
     // for iframes
-    it('default z-index is greater than 100', function(done) {
-      runAfterOpen(overlay1, function() {
+    it('default z-index is greater than 100', (done) => {
+      runAfterOpen(overlay1, () => {
         const styleZ = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
         assert.isTrue(styleZ > 100, 'overlay1 z-index is <= 100');
         done();
       });
     });
 
-    it('ensureMinimumZ() effects z-index', function(done) {
+    it('ensureMinimumZ() effects z-index', (done) => {
       ArcOverlayManager.ensureMinimumZ(1000);
-      runAfterOpen(overlay1, function() {
+      runAfterOpen(overlay1, () => {
         const styleZ = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
         assert.isTrue(styleZ > 1000, 'overlay1 z-index is <= 1000');
         done();
       });
     });
 
-    it('ensureMinimumZ() never decreases the minimum z-index', function(done) {
+    it('ensureMinimumZ() never decreases the minimum z-index', (done) => {
       ArcOverlayManager.ensureMinimumZ(1000);
       ArcOverlayManager.ensureMinimumZ(500);
-      runAfterOpen(overlay1, function() {
+      runAfterOpen(overlay1, () => {
         const styleZ = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
         assert.isTrue(styleZ > 1000, 'overlay1 z-index is <= 1000');
         done();
@@ -1387,7 +1437,7 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('multiple overlays with backdrop', function() {
+  describe('multiple overlays with backdrop', () => {
     let overlay1;
     let overlay2;
     let overlay3;
@@ -1396,11 +1446,16 @@ describe('ArcOverlayMixin', function() {
       overlay1 = await multipleFixture();
       overlay2 = overlay1.nextElementSibling;
       overlay3 = overlay2.nextElementSibling;
-      overlay1.withBackdrop = overlay2.withBackdrop = overlay3.withBackdrop = true;
+      // @ts-ignore
+      overlay1.withBackdrop = true;
+      // @ts-ignore
+      overlay2.withBackdrop = true;
+      // @ts-ignore
+      overlay3.withBackdrop = true;
       await nextFrame();
     });
 
-    it('multiple overlays share the same backdrop', function() {
+    it('multiple overlays share the same backdrop', () => {
       assert.isTrue(
           overlay1.backdropElement === overlay2.backdropElement,
           'overlay1 and overlay2 have the same backdrop element');
@@ -1409,11 +1464,11 @@ describe('ArcOverlayMixin', function() {
           'overlay1 and overlay3 have the same backdrop element');
     });
 
-    it('only one arc-overlay-backdrop in the DOM', function(done) {
+    it('only one arc-overlay-backdrop in the DOM', (done) => {
       // Open them all.
       overlay1.opened = true;
       overlay2.opened = true;
-      runAfterOpen(overlay3, function() {
+      runAfterOpen(overlay3, () => {
         assert.lengthOf(
             document.querySelectorAll('arc-overlay-backdrop'),
             1,
@@ -1422,13 +1477,14 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('arc-overlay-backdrop is removed from the DOM when all overlays with backdrop are closed', function(done) {
+    it('arc-overlay-backdrop is removed from the DOM when all overlays with backdrop are closed', (done) => {
       // Open & close them all.
       overlay1.opened = true;
       overlay2.opened = true;
-      runAfterOpen(overlay3, function() {
-        overlay1.opened = overlay2.opened = false;
-        runAfterClose(overlay3, function() {
+      runAfterOpen(overlay3, () => {
+        overlay1.opened = false;
+        overlay2.opened = false;
+        runAfterClose(overlay3, () => {
           assert.lengthOf(
               document.querySelectorAll('arc-overlay-backdrop'),
               0,
@@ -1438,9 +1494,9 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('newest overlay appear on top', function(done) {
-      runAfterOpen(overlay1, function() {
-        runAfterOpen(overlay2, function() {
+    it('newest overlay appear on top', (done) => {
+      runAfterOpen(overlay1, () => {
+        runAfterOpen(overlay2, () => {
           const style1Z = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
           const style2Z = parseInt(window.getComputedStyle(overlay2).zIndex, 10);
           const bgStyleZ = parseInt(
@@ -1453,9 +1509,9 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('updating with-backdrop updates z-index', function(done) {
-      runAfterOpen(overlay1, function() {
-        runAfterOpen(overlay2, function() {
+    it('updating with-backdrop updates z-index', (done) => {
+      runAfterOpen(overlay1, () => {
+        runAfterOpen(overlay2, () => {
           overlay2.withBackdrop = false;
           const style1Z = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
           const style2Z = parseInt(window.getComputedStyle(overlay2).zIndex, 10);
@@ -1468,9 +1524,9 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('click event handled only by top overlay', function(done) {
-      runAfterOpen(overlay1, function() {
-        runAfterOpen(overlay2, function() {
+    it('click event handled only by top overlay', (done) => {
+      runAfterOpen(overlay1, () => {
+        runAfterOpen(overlay2, () => {
           const btn = overlay2.querySelector('button');
           btn.addEventListener('click', () => {
             overlay2.close();
@@ -1484,7 +1540,7 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('overlay in composed tree', function() {
+  describe('overlay in composed tree', () => {
     let composed;
     let overlay;
     let trigger;
@@ -1494,26 +1550,27 @@ describe('ArcOverlayMixin', function() {
         composed = el;
         overlay = composed.shadowRoot.querySelector('#overlay');
         trigger = composed.shadowRoot.querySelector('#trigger');
+        // @ts-ignore
         overlay.withBackdrop = true;
-        overlay.addEventListener('overlay-opened', function() {
+        overlay.addEventListener('overlay-opened', () => {
           done();
         });
         tap(trigger);
       });
     });
 
-    it('click on overlay content does not close it', function(done) {
+    it('click on overlay content does not close it', (done) => {
       // Tap on button inside overlay.
       tap(overlay.querySelector('button'));
-      setTimeout(function() {
+      setTimeout(() => {
         assert.isTrue(overlay.opened, 'overlay still opened');
         done();
       }, 1);
     });
 
-    it('with-backdrop wraps the focus within the overlay', function(done) {
+    it('with-backdrop wraps the focus within the overlay', (done) => {
       // 1ms timeout needed by IE10 to have proper focus switching.
-      setTimeout(function() {
+      setTimeout(() => {
         const buttons = overlay.querySelectorAll('button');
         // Go to last element.
         buttons[buttons.length - 1].focus();
@@ -1521,6 +1578,7 @@ describe('ArcOverlayMixin', function() {
         const tabSpy = sinon.spy();
         document.addEventListener('keydown', tabSpy);
         // Simulate TAB.
+        // @ts-ignore
         pressAndReleaseKeyOn(document, 9, '', 'Tab');
         assert.equal(
             buttons[0],
@@ -1531,6 +1589,7 @@ describe('ArcOverlayMixin', function() {
             tabSpy.getCall(0).args[0].defaultPrevented,
             'keydown default prevented');
         // Simulate Shift+TAB.
+        // @ts-ignore
         pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
         assert.equal(
             buttons[buttons.length - 1],
@@ -1547,7 +1606,7 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('always-on-top', function() {
+  describe('always-on-top', () => {
     let overlay1;
     let overlay2;
 
@@ -1558,9 +1617,9 @@ describe('ArcOverlayMixin', function() {
       await nextFrame();
     });
 
-    it('stays on top', function(done) {
-      runAfterOpen(overlay1, function() {
-        runAfterOpen(overlay2, function() {
+    it('stays on top', (done) => {
+      runAfterOpen(overlay1, () => {
+        runAfterOpen(overlay2, () => {
           const zIndex1 = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
           const zIndex2 = parseInt(window.getComputedStyle(overlay2).zIndex, 10);
           assert.isAbove(zIndex1, zIndex2, 'overlay1 on top');
@@ -1571,10 +1630,10 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('stays on top also if another overlay is with-backdrop', function(done) {
+    it('stays on top also if another overlay is with-backdrop', (done) => {
       overlay2.withBackdrop = true;
-      runAfterOpen(overlay1, function() {
-        runAfterOpen(overlay2, function() {
+      runAfterOpen(overlay1, () => {
+        runAfterOpen(overlay2, () => {
           const zIndex1 = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
           const zIndex2 = parseInt(window.getComputedStyle(overlay2).zIndex, 10);
           assert.isAbove(zIndex1, zIndex2, 'overlay1 on top');
@@ -1585,10 +1644,10 @@ describe('ArcOverlayMixin', function() {
       });
     });
 
-    it('last overlay with always-on-top wins', function(done) {
+    it('last overlay with always-on-top wins', (done) => {
       overlay2.alwaysOnTop = true;
-      runAfterOpen(overlay1, function() {
-        runAfterOpen(overlay2, function() {
+      runAfterOpen(overlay1, () => {
+        runAfterOpen(overlay2, () => {
           const zIndex1 = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
           const zIndex2 = parseInt(window.getComputedStyle(overlay2).zIndex, 10);
           assert.isAbove(zIndex2, zIndex1, 'overlay2 on top');
@@ -1600,7 +1659,7 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('animations', function() {
+  describe('animations', () => {
     let overlay;
     beforeEach(async () => {
       overlay = await basicFixture();
@@ -1608,8 +1667,8 @@ describe('ArcOverlayMixin', function() {
       await nextFrame();
     });
 
-    it('overlay animations correctly triggered', function(done) {
-      overlay.addEventListener('simple-overlay-open-animation-start', function() {
+    it('overlay animations correctly triggered', (done) => {
+      overlay.addEventListener('simple-overlay-open-animation-start', () => {
         // Since animated overlay will transition center + 300px to center,
         // we should not find the element at the center when the open animation
         // starts.
@@ -1622,30 +1681,30 @@ describe('ArcOverlayMixin', function() {
       overlay.open();
     });
 
-    it('overlay detached before opening animation is done', function(done) {
+    it('overlay detached before opening animation is done', (done) => {
       // Test will fail if `done` is called more than once.
-      runAfterOpen(overlay, function() {
+      runAfterOpen(overlay, () => {
         assert.equal(overlay.style.display, '', 'overlay displayed');
         assert.notEqual(overlay.style.zIndex, '', 'z-index ok');
         done();
       });
       // After some time, but before the animation is completed...
-      setTimeout(function() {
+      setTimeout(() => {
         // Animation is not done yet, but we remove the overlay already.
         overlay.parentNode.removeChild(overlay);
       }, 50);
     });
 
-    it('overlay detached before closing animation is done', function(done) {
-      runAfterOpen(overlay, function() {
+    it('overlay detached before closing animation is done', (done) => {
+      runAfterOpen(overlay, () => {
         // Test will fail if `done` is called more than once.
-        runAfterClose(overlay, function() {
+        runAfterClose(overlay, () => {
           assert.equal(overlay.style.display, 'none', 'overlay hidden');
           assert.equal(overlay.style.zIndex, '', 'z-index reset');
           done();
         });
         // After some time, but before the animation is completed...
-        setTimeout(function() {
+        setTimeout(() => {
           // Animation is not done yet, but we remove the overlay already.
           overlay.parentNode.removeChild(overlay);
         }, 50);
@@ -1779,6 +1838,48 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
+  describe('onopened', () => {
+    let element;
+    beforeEach(async () => {
+      element = await basicFixture();
+    });
+
+    it('Getter returns previously registered handler', () => {
+      assert.isUndefined(element.onopened);
+      const f = () => {};
+      element.onopened = f;
+      assert.isTrue(element.onopened === f);
+    });
+
+    it('Calls registered function', () => {
+      let called = false;
+      const f = () => {
+        called = true;
+      };
+      element.onopened = f;
+      element._finishRenderOpened();
+      element.onopened = null;
+      assert.isTrue(called);
+    });
+
+    it('Unregisteres old function', () => {
+      let called1 = false;
+      let called2 = false;
+      const f1 = () => {
+        called1 = true;
+      };
+      const f2 = () => {
+        called2 = true;
+      };
+      element.onopened = f1;
+      element.onopened = f2;
+      element._finishRenderOpened();
+      element.onopened = null;
+      assert.isFalse(called1);
+      assert.isTrue(called2);
+    });
+  });
+
   describe('onoverlayclosed', () => {
     let element;
     beforeEach(async () => {
@@ -1821,7 +1922,84 @@ describe('ArcOverlayMixin', function() {
     });
   });
 
-  describe('a11y', function() {
+  describe('onclosed', () => {
+    let element;
+    beforeEach(async () => {
+      element = await basicFixture();
+    });
+
+    it('Getter returns previously registered handler', () => {
+      assert.isUndefined(element.onclosed);
+      const f = () => {};
+      element.onclosed = f;
+      assert.isTrue(element.onclosed === f);
+    });
+
+    it('Calls registered function', () => {
+      let called = false;
+      const f = () => {
+        called = true;
+      };
+      element.onclosed = f;
+      element._finishRenderClosed();
+      element.onclosed = null;
+      assert.isTrue(called);
+    });
+
+    it('Unregisteres old function', () => {
+      let called1 = false;
+      let called2 = false;
+      const f1 = () => {
+        called1 = true;
+      };
+      const f2 = () => {
+        called2 = true;
+      };
+      element.onclosed = f1;
+      element.onclosed = f2;
+      element._finishRenderClosed();
+      element.onclosed = null;
+      assert.isFalse(called1);
+      assert.isTrue(called2);
+    });
+  });
+
+  describe('oncancel', () => {
+    let element;
+    beforeEach(async () => {
+      element = await basicFixture();
+    });
+
+    it('Calls registered function', () => {
+      let called = false;
+      const f = () => {
+        called = true;
+      };
+      element.oncancel = f;
+      element.cancel();
+      element.oncancel = null;
+      assert.isTrue(called);
+    });
+
+    it('Unregisteres old function', () => {
+      let called1 = false;
+      let called2 = false;
+      const f1 = () => {
+        called1 = true;
+      };
+      const f2 = () => {
+        called2 = true;
+      };
+      element.oncancel = f1;
+      element.oncancel = f2;
+      element.cancel();
+      element.oncancel = null;
+      assert.isFalse(called1);
+      assert.isTrue(called2);
+    });
+  });
+
+  describe('a11y', () => {
     it('overlay has aria-hidden=true when opened', async () => {
       const overlay = await basicFixture();
       assert.equal(

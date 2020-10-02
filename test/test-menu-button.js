@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
 import './test-overlay.js';
 
-class TestMenuButton extends LitElement {
+export class TestMenuButton extends LitElement {
   get styles() {
     return css`
     :host {

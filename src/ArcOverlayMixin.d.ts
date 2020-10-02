@@ -1,5 +1,5 @@
-import {ArcFitMixinConstructor} from '@advanced-rest-client/arc-fit-mixin/src/ArcFitMixin';
-import {ArcResizableMixinConstructor} from '@advanced-rest-client/arc-resizable-mixin/src/ArcResizableMixin';
+import {ArcFitMixinConstructor, ArcFitMixin} from '@advanced-rest-client/arc-fit-mixin';
+import {ArcResizableMixinConstructor, ArcResizableMixin} from '@advanced-rest-client/arc-resizable-mixin';
 import {ArcOverlayManager} from './ArcOverlayManager.js';
 import {ArcOverlayBackdrop} from './ArcOverlayBackdrop.js';
 
@@ -66,28 +66,37 @@ export declare interface ArcOverlayMixinConstructor {
  *  ...
  * }
  * ```
+ * 
+ * @fires opened Dispatched after the element is rendered opened
+ * @fires closed Dispatched after the element is rendered closed
+ * @fires cancel Dispatched when element is about to be closed. Cancelling the event stops the closing.
  */
-export declare interface ArcOverlayMixin {
+export declare interface ArcOverlayMixin extends ArcFitMixin, ArcResizableMixin {
   /**
    * True if the overlay is currently displayed.
+   * @attribute
    */
   opened:boolean;
   /**
    * Set to true to display a backdrop behind the overlay. It traps the focus
    * within the light DOM of the overlay.
+   * @attribute
    */
   withBackdrop:boolean;
   /**
    * Set to true to disable auto-focusing the overlay or child nodes with
    * the `autofocus` attribute` when the overlay is opened.
+   * @attribute
    */
   noAutoFocus:boolean;
   /**
    * Set to true to disable canceling the overlay with the ESC key.
+   * @attribute
    */
   noCancelOnEscKey:boolean;
   /**
    * Set to true to disable canceling the overlay by clicking outside it.
+   * @attribute
    */
   noCancelOnOutsideClick:boolean;
   /**
@@ -99,16 +108,19 @@ export declare interface ArcOverlayMixin {
   closingReason: { type: Object },
   /**
    * Set to true to enable restoring of focus when overlay is closed.
+   * @attribute
    */
   restoreFocusOnClose:boolean;
   /**
    * Set to true to allow clicks to go through overlays.
    * When the user clicks outside this overlay, the click may
    * close the overlay below.
+   * @attribute
    */
   allowClickThrough:boolean;
   /**
    * Set to true to keep overlay always on top.
+   * @attribute
    */
   alwaysOnTop:boolean;
   /**
@@ -116,6 +128,7 @@ export declare interface ArcOverlayMixin {
    * happens. Possible values: lock - blocks scrolling from happening, refit -
    * computes the new position on the overlay cancel - causes the overlay to
    * close
+   * @attribute
    */
   scrollAction: string,
   /**
@@ -136,6 +149,8 @@ export declare interface ArcOverlayMixin {
   onoverlaycanceled: EventListener|null;
   onoverlayopened: EventListener|null;
   onoverlayclosed: EventListener|null;
+  onopened: EventListener|null;
+  onclosed: EventListener|null;
   connectedCallback(): void;
   disconnectedCallback(): void;
 
@@ -143,8 +158,8 @@ export declare interface ArcOverlayMixin {
   _setupSlotListeners(): void;
   _removeSlotListeners(): void;
   _processMutations(mutations: MutationEvent[]): void;
-  _listenSlots(nodeList: Node|NodeList): void;
-  _unlistenSlots(nodeList: Node|NodeList): void;
+  _listenSlots(nodeList: Node[]|NodeList|HTMLCollection): void;
+  _unlistenSlots(nodeList: Node[]|NodeList|HTMLCollection): void;
   _boundSchedule(): void;
   /**
    * Toggle the opened state of the overlay.
@@ -242,7 +257,7 @@ export declare interface ArcOverlayMixin {
    * @param event
 
    */
-  _onCaptureTab(event: Event): void;
+  _onCaptureTab(event: KeyboardEvent): void;
 
   /**
    * Refits if the overlay is opened and not animating.
@@ -270,10 +285,10 @@ export declare interface ArcOverlayMixin {
 
   /**
    * Debounces the execution of a callback to the next animation frame.
-   * @param jobname
+   * @param jobName
    * @param callback Always bound to `this`
    */
-  __deraf(jobname: string, callback: Function): void;
+  __deraf(jobName: string, callback: Function): void;
 
   __updateScrollObservers(isAttached: boolean, opened: boolean, scrollAction?: string): void;
 

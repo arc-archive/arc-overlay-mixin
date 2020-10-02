@@ -1,7 +1,7 @@
 import { dedupeMixin } from '@open-wc/dedupe-mixin';
 import { ArcFitMixin } from '@advanced-rest-client/arc-fit-mixin';
 import { ArcResizableMixin } from '@advanced-rest-client/arc-resizable-mixin';
-import { ArcFocusablesHelper } from '../arc-focusables-helper.js';
+import { ArcFocusableHelper } from '../arc-focusable-helper.js';
 import { ArcOverlayManager } from '../arc-overlay-manager.js';
 import { pushScrollLock, removeScrollLock } from './arc-scroll-manager.js';
 
@@ -113,6 +113,7 @@ const mxFunction = base => {
       }
       this._openedChanged(value);
       this.__updateScrollObservers(this._isAttached, value, this.scrollAction);
+      this.dispatchEvent(new CustomEvent('openedchange'));
       this.dispatchEvent(new CustomEvent('opened-changed', {
         detail: {
           value
@@ -261,7 +262,7 @@ const mxFunction = base => {
 
     /**
      * Returns the node to give focus to.
-     * @return {!Node}
+     * @return {!HTMLElement}
      */
     get _focusNode() {
       return this._focusedChild || this.querySelector('[autofocus]') || this;
@@ -279,7 +280,7 @@ const mxFunction = base => {
      * @protected
      */
     get _focusableNodes() {
-      return ArcFocusablesHelper.getTabbableNodes(this);
+      return ArcFocusableHelper.getTabbableNodes(this);
     }
 
     /**
@@ -344,6 +345,40 @@ const mxFunction = base => {
      */
     set onoverlayclosed(value) {
       this._registerCallback('overlay-closed', value);
+    }
+
+    /**
+     * @return {EventListener} Previously registered handler for `opened` event
+     */
+    get onopened() {
+      // eslint-disable-next-line dot-notation
+      return this['_onopened'];
+    }
+
+    /**
+     * Registers a callback function for `opened` event
+     * @param {EventListener} value A callback to register. Pass `null` or `undefined`
+     * to clear the listener.
+     */
+    set onopened(value) {
+      this._registerCallback('opened', value);
+    }
+
+    /**
+     * @return {EventListener} Previously registered handler for `closed` event
+     */
+    get onclosed() {
+      // eslint-disable-next-line dot-notation
+      return this['_onclosed'];
+    }
+
+    /**
+     * Registers a callback function for `closed` event
+     * @param {EventListener} value A callback to register. Pass `null` or `undefined`
+     * to clear the listener.
+     */
+    set onclosed(value) {
+      this._registerCallback('closed', value);
     }
 
     constructor() {
@@ -431,7 +466,7 @@ const mxFunction = base => {
 
     /**
      * Registers an event handler for given type
-     * @param {String} eventType Event type (name)
+     * @param {string} eventType Event type (name)
      * @param {EventListener} value The handler to register
      */
     _registerCallback(eventType, value) {
@@ -477,13 +512,13 @@ const mxFunction = base => {
     }
 
     /**
-     * @param {!Array<!Node>|!NodeList<!Node>} nodeList Nodes that could change
+     * @param {!Array<!Node>|!NodeList|!HTMLCollection} nodeList Nodes that could change
      * @return {void}
      * @private
      */
     _listenSlots(nodeList) {
       for (let i=0; i < nodeList.length; i++) {
-        const n = nodeList[i];
+        const n = /** @type Element */ (nodeList[i]);
         if (n.localName === 'slot') {
           n.addEventListener('slotchange', this._boundSchedule);
         }
@@ -491,13 +526,13 @@ const mxFunction = base => {
     }
 
     /**
-     * @param {!Array<!Node>|!NodeList<!Node>} nodeList Nodes that could change
+     * @param {!Array<!Node>|!NodeList|!HTMLCollection} nodeList Nodes that could change
      * @return {void}
      * @private
      */
     _unlistenSlots(nodeList) {
       for (let i=0; i < nodeList.length; i++) {
-        const n = nodeList[i];
+        const n = /** @type Element */ (nodeList[i]);
         if (n.localName === 'slot') {
           n.removeEventListener('slotchange', this._boundSchedule);
         }
@@ -545,7 +580,15 @@ const mxFunction = base => {
         composed: true,
         detail: event
       };
-      let cancelEvent = new CustomEvent('overlay-canceled', detail);
+      // This is consistent with the web platform and the `cancel` event
+      // Note, don't set `oncancel` event registration as this is a standard property
+      let cancelEvent = new Event('cancel', { cancelable: true, bubbles: true });
+      this.dispatchEvent(cancelEvent);
+      if (cancelEvent.defaultPrevented) {
+        return;
+      }
+      // Deprecate the two
+      cancelEvent = new CustomEvent('overlay-canceled', detail);
       this.dispatchEvent(cancelEvent);
       if (cancelEvent.defaultPrevented) {
         return;
@@ -678,6 +721,8 @@ const mxFunction = base => {
         bubbles: true,
         composed: true
       };
+      this.dispatchEvent(new CustomEvent('opened', detail));
+      // Deprecate the two
       this.dispatchEvent(new CustomEvent('overlay-opened', detail));
       this.dispatchEvent(new CustomEvent('iron-overlay-opened', detail));
     }
@@ -699,6 +744,8 @@ const mxFunction = base => {
         composed: true,
         detail: this.closingReason
       };
+      this.dispatchEvent(new CustomEvent('closed', detail));
+      // Deprecate the two
       this.dispatchEvent(new CustomEvent('overlay-closed', detail));
       this.dispatchEvent(new CustomEvent('iron-overlay-closed', detail));
     }
@@ -780,11 +827,13 @@ const mxFunction = base => {
         return;
       }
       const cp = event.composedPath && event.composedPath();
+      // @ts-ignore
       const path = cp || event.path;
       if (path.indexOf(this) === -1) {
         event.stopPropagation();
         this._applyFocus();
       } else {
+        // eslint-disable-next-line prefer-destructuring
         this._focusedChild = path[0];
       }
     }
@@ -803,7 +852,7 @@ const mxFunction = base => {
     /**
      * Handles TAB key events to track focus changes.
      * Will wrap focus for overlays withBackdrop.
-     * @param {!Event} event
+     * @param {KeyboardEvent} event
      * @protected
      */
     _onCaptureTab(event) {
@@ -881,6 +930,7 @@ const mxFunction = base => {
      */
     __ensureFirstLastFocusables() {
       const focusableNodes = this._focusableNodes;
+      // eslint-disable-next-line prefer-destructuring
       this.__firstFocusableNode = focusableNodes[0];
       this.__lastFocusableNode = focusableNodes[focusableNodes.length - 1];
     }
@@ -910,17 +960,18 @@ const mxFunction = base => {
 
     /**
      * Debounces the execution of a callback to the next animation frame.
-     * @param {!string} jobname
+     * @param {!string} jobName
      * @param {!Function} callback Always bound to `this`
      * @private
      */
-    __deraf(jobname, callback) {
+    __deraf(jobName, callback) {
       const rafs = this.__rafs;
-      if (rafs[jobname] !== null) {
-        cancelAnimationFrame(rafs[jobname]);
+      if (rafs[jobName] !== null) {
+        cancelAnimationFrame(rafs[jobName]);
       }
-      rafs[jobname] = requestAnimationFrame(function nextAnimationFrame() {
-        rafs[jobname] = null;
+      rafs[jobName] = requestAnimationFrame(function nextAnimationFrame() {
+        rafs[jobName] = null;
+        // @ts-ignore
         callback.call(this);
       }.bind(this));
     }
@@ -954,9 +1005,11 @@ const mxFunction = base => {
         // when in native ShadowDOM.
         let node = this;
         while (node) {
+          // @ts-ignore
           if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && node.host) {
             this.__rootNodes.push(node);
           }
+          // @ts-ignore
           node = node.host || node.assignedSlot || node.parentNode;
         }
         this.__rootNodes.push(document);
@@ -1019,6 +1072,7 @@ const mxFunction = base => {
         case 'cancel':
           this.cancel(event);
           break;
+        default:
       }
     }
 

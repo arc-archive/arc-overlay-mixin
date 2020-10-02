@@ -19,10 +19,10 @@ const matches = p.matches || p.matchesSelector || p.mozMatchesSelector ||
   // @ts-ignore
   p.msMatchesSelector || p.oMatchesSelector || p.webkitMatchesSelector;
 
-export class ArcFocusablesHelper {
+export class ArcFocusableHelper {
   /**
    * Returns a sorted array of tabbable nodes, including the root node.
-   * It searches the tabbable nodes in the light and shadow dom of the chidren,
+   * It searches the tabbable nodes in the light and shadow dom of the children,
    * sorting the result by tabindex.
    * @param {!Node} node
    * @return {!Array<!HTMLElement>}
@@ -118,9 +118,9 @@ export class ArcFocusablesHelper {
     if (tabIndex >= 0) {
       result.push(element);
     }
-    // In ShadowDOM v1, tab order is affected by the order of distrubution.
+    // In ShadowDOM v1, tab order is affected by the order of distribution.
     // E.g. getTabbableNodes(#root) in ShadowDOM v1 should return [#A, #B];
-    // in ShadowDOM v0 tab order is not affected by the distrubution order,
+    // in ShadowDOM v0 tab order is not affected by the distribution order,
     // in fact getTabbableNodes(#root) returns [#B, #A].
     //  <div id="root">
     //   <!-- shadow -->

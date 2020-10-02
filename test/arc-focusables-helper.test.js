@@ -1,7 +1,10 @@
+/* eslint-disable prefer-template */
+/* eslint-disable no-plusplus */
+/* eslint-disable func-names */
 import {fixture, assert, nextFrame} from '@open-wc/testing';
 import './test-buttons.js';
 import './test-buttons-wrapper.js';
-import {ArcFocusablesHelper} from '../arc-focusables-helper.js';
+import {ArcFocusableHelper} from '../arc-focusable-helper.js';
 
 const s = document.createElement('style');
 s.type = 'text/css';
@@ -15,9 +18,9 @@ s.innerHTML = `
 `;
 document.getElementsByTagName('head')[0].appendChild(s);
 
-describe('ArcFocusablesHelper', function() {
+describe('ArcFocusableHelper', function() {
   async function basicFixture() {
-    return (await fixture(`
+    return (fixture(`
       <div>
         <h2>Focusables (no tabindex)</h2>
         <div>
@@ -32,7 +35,7 @@ describe('ArcFocusablesHelper', function() {
   }
 
   async function tabindexFixture() {
-    return (await fixture(`
+    return (fixture(`
       <div>
         <h2>Focusables (with tabindex)</h2>
         <div tabindex="0" class="focusable7">7</div>
@@ -54,7 +57,7 @@ describe('ArcFocusablesHelper', function() {
   }
 
   async function shadowFixture() {
-    return (await fixture(`
+    return (fixture(`
       <test-buttons>
         <h2>focusables in ShadowDOM</h2>
         <input placeholder="type something..">
@@ -62,7 +65,7 @@ describe('ArcFocusablesHelper', function() {
   }
 
   async function composedFixture() {
-    return (await fixture(`
+    return (fixture(`
       <test-buttons-wrapper>
         <input placeholder="type something..">
       </test-buttons-wrapper>`));
@@ -72,7 +75,7 @@ describe('ArcFocusablesHelper', function() {
     it('returns tabbable nodes', async () => {
       const node = await basicFixture();
       await nextFrame();
-      const focusableNodes = ArcFocusablesHelper.getTabbableNodes(node);
+      const focusableNodes = ArcFocusableHelper.getTabbableNodes(node);
       assert.equal(focusableNodes.length, 3, '3 nodes are focusable');
       assert.equal(focusableNodes[0], node.querySelector('.focusable1'));
       assert.equal(focusableNodes[1], node.querySelector('.focusable2'));
@@ -83,8 +86,9 @@ describe('ArcFocusablesHelper', function() {
       const node = await basicFixture();
       await nextFrame();
       node.setAttribute('tabindex', '0');
-      const focusableNodes = ArcFocusablesHelper.getTabbableNodes(node);
+      const focusableNodes = ArcFocusableHelper.getTabbableNodes(node);
       assert.equal(focusableNodes.length, 4, '4 focusable nodes');
+      // @ts-ignore
       assert.notEqual(focusableNodes.indexOf(node), -1, 'root is included');
     });
 
@@ -93,9 +97,10 @@ describe('ArcFocusablesHelper', function() {
       await nextFrame();
       const focusable = node.querySelector('.focusable1');
       focusable.classList.add('hidden');
-      const focusableNodes = ArcFocusablesHelper.getTabbableNodes(node);
+      const focusableNodes = ArcFocusableHelper.getTabbableNodes(node);
       assert.equal(focusableNodes.length, 2, '2 focusable nodes');
       assert.equal(
+          // @ts-ignore
           focusableNodes.indexOf(focusable),
           -1,
           'hidden element is not included');
@@ -106,9 +111,10 @@ describe('ArcFocusablesHelper', function() {
       await nextFrame();
       const focusable = node.querySelector('.focusable1');
       focusable.classList.add('no-display');
-      const focusableNodes = ArcFocusablesHelper.getTabbableNodes(node);
+      const focusableNodes = ArcFocusableHelper.getTabbableNodes(node);
       assert.equal(focusableNodes.length, 2, '2 focusable nodes');
       assert.equal(
+          // @ts-ignore
           focusableNodes.indexOf(focusable),
           -1,
           'hidden element is not included');
@@ -117,7 +123,7 @@ describe('ArcFocusablesHelper', function() {
     it('respects the tabindex order', async () => {
       const node = await tabindexFixture();
       await nextFrame();
-      const focusableNodes = ArcFocusablesHelper.getTabbableNodes(node);
+      const focusableNodes = ArcFocusableHelper.getTabbableNodes(node);
       assert.equal(focusableNodes.length, 12, '12 nodes are focusable');
       for (let i = 0; i < 12; i++) {
         assert.equal(
@@ -128,7 +134,7 @@ describe('ArcFocusablesHelper', function() {
     it('includes tabbable elements in the shadow dom', async () => {
       const node = await shadowFixture();
       await nextFrame();
-      const focusableNodes = ArcFocusablesHelper.getTabbableNodes(node);
+      const focusableNodes = ArcFocusableHelper.getTabbableNodes(node);
       assert.equal(focusableNodes.length, 4, '4 nodes are focusable');
       assert.equal(focusableNodes[0], node.shadowRoot.querySelector('#button0'));
       assert.equal(focusableNodes[1], node.shadowRoot.querySelector('#button1'));
@@ -139,7 +145,7 @@ describe('ArcFocusablesHelper', function() {
     it('handles composition', async () => {
       const node = await composedFixture();
       await nextFrame();
-      const focusableNodes = ArcFocusablesHelper.getTabbableNodes(node);
+      const focusableNodes = ArcFocusableHelper.getTabbableNodes(node);
       assert.equal(focusableNodes.length, 6, '6 nodes are focusable');
       const wrapped = node.shadowRoot.querySelector('#wrapped');
       assert.equal(focusableNodes[0], node.shadowRoot.querySelector('#select'));
@@ -154,7 +160,7 @@ describe('ArcFocusablesHelper', function() {
       const node = await composedFixture();
       await nextFrame();
       const wrapped = node.shadowRoot.querySelector('#wrapped');
-      const focusableNodes = ArcFocusablesHelper.getTabbableNodes(wrapped);
+      const focusableNodes = ArcFocusableHelper.getTabbableNodes(wrapped);
       assert.equal(focusableNodes.length, 4, '4 nodes are focusable');
       assert.equal(focusableNodes[0], wrapped.shadowRoot.querySelector('#button0'));
       assert.equal(focusableNodes[1], wrapped.shadowRoot.querySelector('#button1'));

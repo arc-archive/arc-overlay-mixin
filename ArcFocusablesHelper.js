@@ -1,2 +1,2 @@
 // left for compatibility
-export { ArcFocusablesHelper } from './src/ArcFocusablesHelper.js';
+export { ArcFocusableHelper } from './src/ArcFocusableHelper.js';

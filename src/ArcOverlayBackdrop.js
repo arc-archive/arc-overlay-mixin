@@ -171,13 +171,13 @@ export class ArcOverlayBackdrop extends LitElement {
   }
 
   /**
-   * Toggles clas on this element.
+   * Toggles class on this element.
    * @param {String} klass CSS class name to toggle
-   * @param {Boolean} cond Boolean condition to test whether the class should be
-   * added or removwed.
+   * @param {Boolean} condition Boolean condition to test whether the class should be
+   * added or removed.
    */
-  toggleClass(klass, cond) {
-    if (cond) {
+  toggleClass(klass, condition) {
+    if (condition) {
       if (!this.classList.contains(klass)) {
         this.classList.add(klass);
       }

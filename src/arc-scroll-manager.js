@@ -1,3 +1,4 @@
+/* eslint-disable import/no-mutable-exports */
 /* istanbul ignore file */
 /**
 @license
@@ -122,13 +123,13 @@ export function _getScrollInfo(event) {
 export function _getScrollingNode(nodes, deltaX, deltaY) {
   // No scroll.
   if (!deltaX && !deltaY) {
-    return;
+    return undefined;
   }
   // Check only one axis according to where there is more scroll.
   // Prefer vertical to horizontal.
   const verticalScroll = Math.abs(deltaY) >= Math.abs(deltaX);
   for (let i = 0; i < nodes.length; i++) {
-    const node = nodes[i];
+    const node = /** @type HTMLElement */ (nodes[i]);
     let canScroll = false;
     if (verticalScroll) {
       // delta < 0 is scroll up, delta > 0 is scroll down.
@@ -141,6 +142,7 @@ export function _getScrollingNode(nodes, deltaX, deltaY) {
       return node;
     }
   }
+  return undefined;
 }
 
 /**
@@ -159,9 +161,9 @@ export function _getScrollableNodes(nodes) {
     if (nodes[i].nodeType !== Node.ELEMENT_NODE) {
       continue;
     }
-    const node = /** @type {!Element} */ (nodes[i]);
+    const node = /** @type {!HTMLElement} */ (nodes[i]);
     // Check inline style before checking computed style.
-    let style = node.style;
+    let { style } = node;
     if (!style.overflow.includes('scroll') && !style.overflow.includes('auto')) {
       style = window.getComputedStyle(node);
     }
@@ -226,7 +228,8 @@ export function _shouldPreventScrolling(event) {
   // Update if root target changed. For touch events, ensure we don't
   // update during touchmove.
   const cp = event.composedPath && event.composedPath();
-  const path = cp ? cp : event.path;
+  // @ts-ignore
+  const path = cp || event.path;
   const target = path[0];
   if (event.type !== 'touchmove' && lastRootTarget !== target) {
     lastRootTarget = target;
@@ -309,6 +312,7 @@ export function _unlockScrollInteractions() {
   for (let i = 0, l = scrollEvents.length; i < l; i++) {
     // NOTE: browsers that don't support objects as third arg will
     // interpret it as boolean, hence useCapture = true in this case.
+    // @ts-ignore
     document.removeEventListener(scrollEvents[i], _boundScrollHandler, { capture: true, passive: false });
   }
 }

@@ -21,7 +21,7 @@ import '../arc-overlay-backdrop.js';
 /* eslint-disable no-cond-assign */
 
 /**
- * The class was originallt designed by Polymer team.
+ * The class was originally designed by Polymer team.
  * @struct
  * @constructor
  */

@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
 import { ArcOverlayMixin } from '../arc-overlay-mixin.js';
 
-class TestOverlay extends ArcOverlayMixin(LitElement) {
+export class TestOverlay extends ArcOverlayMixin(LitElement) {
   get styles() {
     return css`
     :host {
@@ -53,7 +53,7 @@ class TestOverlay extends ArcOverlayMixin(LitElement) {
     this.removeEventListener('transitionend', this.__onTransitionEnd);
   }
 
-  _renderOpened(...args) {
+  _renderOpened() {
     if (this.animated) {
       if (this.withBackdrop) {
         this.backdropElement.open();

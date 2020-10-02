@@ -2,7 +2,7 @@ import { ArcOverlayBackdrop } from './ArcOverlayBackdrop';
 export {ArcOverlayManager};
 
 /**
- * The class was originallt designed by Polymer team.
+ * The class was originally designed by Polymer team.
  */
 declare class ArcOverlayManager {
 
@@ -15,6 +15,11 @@ declare class ArcOverlayManager {
    * The deepest active element.
    */
   readonly deepActiveElement: HTMLElement;
+
+  _overlays: HTMLElement[];
+  _minimumZ: number;
+  _backdropElement: ArcOverlayBackdrop;
+
   constructor();
 
   /**
