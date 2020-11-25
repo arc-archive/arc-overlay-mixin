@@ -1,7 +1,5 @@
 coverage/
 test/
 demo/
-.travis.yml
 polymer.json
-karma.*
 .*

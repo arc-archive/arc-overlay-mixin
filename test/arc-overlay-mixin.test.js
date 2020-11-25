@@ -1964,41 +1964,6 @@ describe('ArcOverlayMixin', () => {
     });
   });
 
-  describe('oncancel', () => {
-    let element;
-    beforeEach(async () => {
-      element = await basicFixture();
-    });
-
-    it('Calls registered function', () => {
-      let called = false;
-      const f = () => {
-        called = true;
-      };
-      element.oncancel = f;
-      element.cancel();
-      element.oncancel = null;
-      assert.isTrue(called);
-    });
-
-    it('Unregisteres old function', () => {
-      let called1 = false;
-      let called2 = false;
-      const f1 = () => {
-        called1 = true;
-      };
-      const f2 = () => {
-        called2 = true;
-      };
-      element.oncancel = f1;
-      element.oncancel = f2;
-      element.cancel();
-      element.oncancel = null;
-      assert.isFalse(called1);
-      assert.isTrue(called2);
-    });
-  });
-
   describe('a11y', () => {
     it('overlay has aria-hidden=true when opened', async () => {
       const overlay = await basicFixture();

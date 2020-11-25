@@ -1,9 +1,9 @@
-import {ArcFitMixinConstructor, ArcFitMixin} from '@advanced-rest-client/arc-fit-mixin';
-import {ArcResizableMixinConstructor, ArcResizableMixin} from '@advanced-rest-client/arc-resizable-mixin';
+import {ArcFitMixin} from '@advanced-rest-client/arc-fit-mixin';
+import {ArcResizableMixin} from '@advanced-rest-client/arc-resizable-mixin';
 import {ArcOverlayManager} from './ArcOverlayManager.js';
 import {ArcOverlayBackdrop} from './ArcOverlayBackdrop.js';
 
-export declare function ArcOverlayMixin<T extends new (...args: any[]) => {}>(base: T): T & ArcFitMixinConstructor & ArcResizableMixinConstructor & ArcOverlayMixinConstructor;
+export declare function ArcOverlayMixin<T extends new (...args: any[]) => {}>(base: T): T & ArcFitMixin & ArcResizableMixin & ArcOverlayMixinConstructor;
 export declare interface ArcOverlayMixinConstructor {
   new(...args: any[]): ArcOverlayMixin;
 }
@@ -70,6 +70,8 @@ export declare interface ArcOverlayMixinConstructor {
  * @fires opened Dispatched after the element is rendered opened
  * @fires closed Dispatched after the element is rendered closed
  * @fires cancel Dispatched when element is about to be closed. Cancelling the event stops the closing.
+ * @fires openedchange When the `opened` property changed.
+ * 
  */
 export declare interface ArcOverlayMixin extends ArcFitMixin, ArcResizableMixin {
   /**
