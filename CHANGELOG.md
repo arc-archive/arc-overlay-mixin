@@ -343,3 +343,20 @@
 * [ci skip] automated merge master->stage. syncing main branches [08fb513](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/08fb513b90abfa4cb3695581b2e6518a6aba39ab) by Ci agent
 
 
+<a name="1.1.7"></a>
+## [1.1.7](https://github.com/advanced-rest-client/arc-overlay-mixin/compare/1.1.5...1.1.7) (2020-11-25)
+
+### Build
+
+* bumpiong version [b1a40ff](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/b1a40ff5b3015e9ba87d92b468521ba487115007) by Pawel
+
+
+### Update
+
+* upgrading tests runner [d42e049](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/d42e0495815fa05ea13f8a79138d28ecac60bb41) by Pawel Psztyc
+* updating contibutors [5263d0a](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/5263d0a1f4a76141905acea970ea7d8ca77b2d4a) by Pawel
+* [ci skip] automated merge master->stage. syncing main branches [df67fdc](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/df67fdc7b960b3cc8be255ab0eb32928c3ad8377) by Ci agent
+* minor refactor, updating types [f8fde41](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/f8fde41845f96b37ca1ed53621e14a3c2e26ad5c) by Pawel
+* [ci skip] automated merge master->stage. syncing main branches [3989e0f](https://github.com/advanced-rest-client/arc-overlay-mixin/commit/3989e0fb0cf16074be05e8bca4435d93a04d576f) by Ci agent
+
+
