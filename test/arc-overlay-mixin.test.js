@@ -1,6 +1,6 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-shadow */
-import { fixture, assert, nextFrame } from '@open-wc/testing';
+import { fixture, assert, nextFrame, aTimeout, oneEvent } from '@open-wc/testing';
 // @ts-ignore
 import sinon from 'sinon/pkg/sinon-esm.js';
 import { pressAndReleaseKeyOn, tap, focus } from '@polymer/iron-test-helpers/mock-interactions.js';
@@ -129,9 +129,42 @@ describe('ArcOverlayMixin', () => {
     overlay.open();
   }
 
+  async function untilOpen(overlay) {
+    return new Promise((resolve) => {
+      overlay.addEventListener('opened', function f() {
+        overlay.removeEventListener('opened', f);
+        resolve();
+      });
+      overlay.open();
+    });
+  }
+
   function runAfterClose(overlay, callback) {
     overlay.addEventListener('overlay-closed', callback);
     overlay.close();
+  }
+
+  async function untilClose(overlay) {
+    return new Promise((resolve) => {
+      overlay.addEventListener('closed', function f() {
+        overlay.removeEventListener('closed', f);
+        resolve();
+      });
+      overlay.close();
+    });
+  }
+
+  async function untilCancel(overlay, type) {
+    return new Promise((resolve) => {
+      overlay.addEventListener(type, function f(e) {
+        overlay.removeEventListener(type, f);
+        e.preventDefault();
+        setTimeout(() => {
+          resolve();
+        }, 10);
+      });
+      document.body.click();
+    });
   }
 
   describe('basic overlay', () => {
@@ -264,11 +297,11 @@ describe('ArcOverlayMixin', () => {
 
     it('overlay open/close events', (done) => {
       let nevents = 0;
-      overlay.addEventListener('overlay-opened', () => {
+      overlay.addEventListener('opened', () => {
         nevents += 1;
         overlay.opened = false;
       });
-      overlay.addEventListener('overlay-closed', () => {
+      overlay.addEventListener('closed', () => {
         nevents += 1;
         assert.equal(nevents, 2, 'opened and closed events fired');
         done();
@@ -276,140 +309,95 @@ describe('ArcOverlayMixin', () => {
       overlay.opened = true;
     });
 
-    it('overlay legacy iron- open/close events', (done) => {
-      let nevents = 0;
-      overlay.addEventListener('iron-overlay-opened', () => {
-        nevents += 1;
-        overlay.opened = false;
-      });
-      overlay.addEventListener('iron-overlay-closed', () => {
-        nevents += 1;
-        assert.equal(nevents, 2, 'opened and closed events fired');
-        done();
-      });
-      overlay.opened = true;
-    });
-
-    it('open() refits overlay only once', (done) => {
+    it('open() refits overlay only once', async () => {
       const spy = sinon.spy(overlay, 'refit');
-      runAfterOpen(overlay, () => {
-        assert.equal(spy.callCount, 1, 'overlay did refit only once');
-        done();
-      });
+      await untilOpen(overlay);
+      assert.equal(spy.callCount, 1, 'overlay did refit only once');
     });
 
-    it('open overlay refits on iron-resize', (done) => {
-      runAfterOpen(overlay, () => {
-        const spy = sinon.spy(overlay, 'refit');
-        overlay.dispatchEvent(new CustomEvent('iron-resize', {
-          composed: true,
-          bubbles: true
-        }));
-        nextFrame().then(() => {
-          assert.isTrue(spy.called, 'overlay did refit');
-          done();
-        });
-      });
-    });
-
-    it('closed overlay does not refit on iron-resize', (done) => {
+    it('open overlay refits on iron-resize', async () => {
+      await untilOpen(overlay);
       const spy = sinon.spy(overlay, 'refit');
       overlay.dispatchEvent(new CustomEvent('iron-resize', {
         composed: true,
         bubbles: true
       }));
-      nextFrame().then(() => {
-        assert.isFalse(spy.called, 'overlay should not refit');
-        done();
-      });
+      await nextFrame();
+      assert.isTrue(spy.called, 'overlay did refit');
     });
 
-    it('open() triggers iron-resize', (done) => {
+    it('closed overlay does not refit on iron-resize', async () => {
+      const spy = sinon.spy(overlay, 'refit');
+      overlay.dispatchEvent(new CustomEvent('resize', {
+        composed: true,
+        bubbles: true
+      }));
+      await nextFrame();
+      assert.isFalse(spy.called, 'overlay should not refit');
+    });
+
+    it('open() triggers resize', async () => {
       let callCount = 0;
-      // Ignore iron-resize triggered by window resize.
-      window.addEventListener('resize', () => {
-        callCount--;
-      }, true);
-      overlay.addEventListener('iron-resize', () => {
+      overlay.addEventListener('resize', () => {
         callCount++;
       });
-      runAfterOpen(overlay, () => {
-        assert.isAbove(
-            callCount, 0, 'iron-resize called before iron-overlay-opened');
-        done();
-      });
+      await untilOpen(overlay);
+      assert.isAbove(callCount, 0, 'resize called before opened');
     });
 
-    it('close() triggers iron-resize', (done) => {
-      runAfterOpen(overlay, () => {
-        const spy = sinon.stub();
-        overlay.addEventListener('iron-resize', spy);
-        runAfterClose(overlay, () => {
-          assert.equal(
-              spy.callCount,
-              1,
-              'iron-resize called once before iron-overlay-closed');
-          done();
-        });
-      });
+    it('close() triggers resize', async () => {
+      await untilOpen(overlay);
+      const spy = sinon.stub();
+      overlay.addEventListener('resize', spy);
+      await untilClose(overlay);
+      assert.equal(spy.callCount, 1, 'resize called once before closed event');
     });
 
-    it('closed overlay does not trigger iron-resize when its content changes', (done) => {
+    it('closed overlay does not trigger resize when its content changes', async () => {
       // Ignore iron-resize triggered by window resize.
       let callCount = 0;
       window.addEventListener('resize', () => {
         callCount--;
       }, true);
-      overlay.addEventListener('iron-resize', () => {
+      overlay.addEventListener('resize', () => {
         callCount++;
       });
       overlay.appendChild(document.createElement('div'));
       // Wait for MutationObserver to be executed.
-      setTimeout(() => {
-        assert.equal(callCount, 0, 'iron-resize should not be called');
-        done();
-      });
+      await aTimeout(0);
+      assert.equal(callCount, 0, 'resize should is not called');
     });
 
-    it('open overlay triggers iron-resize when its content changes', (done) => {
-      runAfterOpen(overlay, () => {
-        const spy = sinon.stub();
-        overlay.addEventListener('iron-resize', spy);
-        overlay.appendChild(document.createElement('div'));
-        // Wait for MutationObserver to be executed.
-        setTimeout(() => {
-          assert.equal(spy.callCount, 1, 'iron-resize should be called once');
-          done();
-        });
-      });
+    it('open overlay triggers resize when its content changes', async () => {
+      await untilOpen(overlay);
+      const spy = sinon.stub();
+      overlay.addEventListener('resize', spy);
+      overlay.appendChild(document.createElement('div'));
+      // Wait for MutationObserver to be executed.
+      await aTimeout(0);
+      assert.equal(spy.callCount, 1, 'resize should be called once');
     });
 
-    it('close an overlay quickly after open', (done) => {
+    it('close an overlay quickly after open', async () => {
       // first, open the overlay
       overlay.open();
-      setTimeout(() => {
-        // during the opening transition, close the overlay
-        overlay.close();
-        // wait for any exceptions to be thrown until the transition is done
-        setTimeout(() => {
-          done();
-        }, 300);
-      });
+      await aTimeout(0);
+      // during the opening transition, close the overlay
+      overlay.close();
+      // wait for any exceptions to be thrown until the transition is done
+      await aTimeout(300);
     });
 
-    it('clicking an overlay does not close it', (done) => {
-      runAfterOpen(overlay, () => {
-        const spy = sinon.stub();
-        overlay.addEventListener('overlay-closed', spy);
-        overlay.click();
-        setTimeout(() => {
-          assert.isFalse(spy.called, 'overlay-closed should not fire');
-          done();
-        }, 10);
-      });
+    it('clicking an overlay does not close it', async () => {
+      await untilOpen(overlay);
+      const spy = sinon.stub();
+      overlay.addEventListener('closed', spy);
+      overlay.click();
+      await aTimeout(10);
+      assert.isFalse(spy.called, 'closed should not fire');
     });
 
-    it('open overlay on mousedown does not close it', (done) => {
+    it('open overlay on mousedown does not close it', async () => {
       const btn = document.createElement('button');
       btn.addEventListener('mousedown', overlay.open.bind(overlay));
       document.body.appendChild(btn);
@@ -422,81 +410,65 @@ describe('ArcOverlayMixin', () => {
 
       document.body.removeChild(btn);
       assert.isTrue(overlay.opened, 'overlay opened');
+
+      await aTimeout(10);
+      assert.isTrue(overlay.opened, 'overlay is still open');
+    });
+
+    it('clicking outside fires canceled', async () => {
+      await untilOpen(overlay);
       setTimeout(() => {
-        assert.isTrue(overlay.opened, 'overlay is still open');
-        done();
-      }, 10);
-    });
-
-    it('clicking outside fires overlay-canceled', (done) => {
-      runAfterOpen(overlay, () => {
-        overlay.addEventListener('overlay-canceled', (event) => {
-          assert.equal(
-              event.detail.target,
-              document.body,
-              'detail contains original click event');
-          done();
-        });
         document.body.click();
       });
+      await oneEvent(overlay, 'cancel');
     });
 
-    it('clicking outside fires legacy iron-overlay-canceled', (done) => {
-      runAfterOpen(overlay, () => {
-        overlay.addEventListener('iron-overlay-canceled', (event) => {
-          assert.equal(
-              event.detail.target,
-              document.body,
-              'detail contains original click event');
-          done();
-        });
+    it('clicking outside fires legacy overlay-canceled', async () => {
+      await untilOpen(overlay);
+      setTimeout(() => {
         document.body.click();
       });
+      const event = await oneEvent(overlay, 'overlay-canceled');
+      assert.equal(event.detail.target, document.body, 'detail contains original click event');
     });
 
-    it('clicking outside closes the overlay', (done) => {
-      runAfterOpen(overlay, () => {
-        overlay.addEventListener('overlay-closed', (event) => {
-          assert.isTrue(event.detail.canceled, 'overlay is canceled');
-          done();
-        });
+    it('clicking outside closes the overlay', async () => {
+      await untilOpen(overlay);
+      setTimeout(() => {
         document.body.click();
       });
+      const event = await oneEvent(overlay, 'closed');
+      assert.isTrue(event.detail.canceled, 'overlay is canceled');
     });
 
-    it('overlay-canceled event can be prevented', (done) => {
-      runAfterOpen(overlay, () => {
-        overlay.addEventListener('overlay-canceled', (event) => {
-          event.preventDefault();
-        });
-        const spy = sinon.stub();
-        overlay.addEventListener('overlay-closed', spy);
-        document.body.click();
-        setTimeout(() => {
-          assert.isTrue(overlay.opened, 'overlay is still open');
-          assert.isFalse(spy.called, 'overlay-closed not fired');
-          done();
-        }, 10);
-      });
+    it('canceled event can be prevented', async () => {
+      await untilOpen(overlay);
+      const spy = sinon.stub();
+      overlay.addEventListener('closed', spy);
+      await untilCancel(overlay, 'cancel');
+      assert.isTrue(overlay.opened, 'overlay is still open');
+      assert.isFalse(spy.called, 'closed not fired');
     });
 
-    it('legacy iron-overlay-canceled event can be prevented', (done) => {
-      runAfterOpen(overlay, () => {
-        overlay.addEventListener('iron-overlay-canceled', (event) => {
-          event.preventDefault();
-        });
-        const spy = sinon.stub();
-        overlay.addEventListener('iron-overlay-closed', spy);
-        document.body.click();
-        setTimeout(() => {
-          assert.isTrue(overlay.opened, 'overlay is still open');
-          assert.isFalse(spy.called, 'iron-overlay-closed not fired');
-          done();
-        }, 10);
-      });
+    it('canceled legacy overlay-canceled event can be prevented', async () => {
+      await untilOpen(overlay);
+      const spy = sinon.stub();
+      overlay.addEventListener('closed', spy);
+      await untilCancel(overlay, 'overlay-canceled');
+      assert.isTrue(overlay.opened, 'overlay is still open');
+      assert.isFalse(spy.called, 'closed not fired');
     });
 
-    it('cancel an overlay with esc key', (done) => {
+    it('canceled legacy iron-overlay-canceled event can be prevented', async () => {
+      await untilOpen(overlay);
+      const spy = sinon.stub();
+      overlay.addEventListener('closed', spy);
+      await untilCancel(overlay, 'iron-overlay-canceled');
+      assert.isTrue(overlay.opened, 'overlay is still open');
+      assert.isFalse(spy.called, 'closed not fired');
+    });
+
+    it('cancels an overlay with esc key', (done) => {
       runAfterOpen(overlay, () => {
         overlay.addEventListener('overlay-canceled', (event) => {
           assert.equal(event.detail.type, 'keydown');
@@ -507,52 +479,48 @@ describe('ArcOverlayMixin', () => {
       });
     });
 
-    it('close an overlay with esc key', (done) => {
-      runAfterOpen(overlay, () => {
-        overlay.addEventListener('overlay-closed', (event) => {
-          assert.isTrue(event.detail.canceled, 'overlay is canceled');
-          done();
-        });
+    it('close an overlay with esc key', async () => {
+      await untilOpen(overlay);
+      setTimeout(() => {
         // @ts-ignore
         pressAndReleaseKeyOn(document, 27, '', 'Escape');
       });
+      const event = await oneEvent(overlay, 'closed');
+      assert.isTrue(event.detail.canceled, 'overlay is canceled');
     });
 
-    it('nocancelonoutsideclick property', (done) => {
+    it('#noCancelOnOutsideClick property', async () => {
       overlay.noCancelOnOutsideClick = true;
-      runAfterOpen(overlay, () => {
-        const spy = sinon.stub();
-        overlay.addEventListener('overlay-closed', spy);
-        tap(document.body);
-        setTimeout(() => {
-          assert.isFalse(spy.called, 'overlay-closed should not fire');
-          done();
-        }, 10);
-      });
+      await untilOpen(overlay);
+      const spy = sinon.stub();
+      overlay.addEventListener('closed', spy);
+      tap(document.body);
+
+      await aTimeout(10);
+      assert.isFalse(spy.called, 'closed should not fire');
     });
 
-    it('nocancelonesckey property', (done) => {
+    it('#noCancelOnEscKey property', async () => {
       overlay.noCancelOnEscKey = true;
-      runAfterOpen(overlay, () => {
-        const spy = sinon.stub();
-        overlay.addEventListener('overlay-closed', spy);
-        // @ts-ignore
-        pressAndReleaseKeyOn(document, 27);
-        setTimeout(() => {
-          assert.isFalse(spy.called, 'overlay-cancel should not fire');
-          done();
-        }, 10);
-      });
+      await untilOpen(overlay);
+      const spy = sinon.stub();
+      overlay.addEventListener('closed', spy);
+
+      // @ts-ignore
+      pressAndReleaseKeyOn(document, 27);
+
+      await aTimeout(10);
+      assert.isFalse(spy.called, 'closed should not fire');
     });
 
-    it('with-backdrop sets tabindex=-1 and removes it', () => {
+    it('#withBackdrop sets tabindex=-1 and removes it', () => {
       overlay.withBackdrop = true;
       assert.equal(overlay.getAttribute('tabindex'), '-1', 'tabindex is -1');
       overlay.withBackdrop = false;
       assert.isFalse(overlay.hasAttribute('tabindex'), 'tabindex removed');
     });
 
-    it('with-backdrop does not override tabindex if already set', () => {
+    it('#withBackdrop does not override tabindex if already set', () => {
       overlay.setAttribute('tabindex', '1');
       overlay.withBackdrop = true;
       assert.equal(overlay.getAttribute('tabindex'), '1', 'tabindex is 1');
