@@ -600,35 +600,22 @@ describe('ArcOverlayMixin', () => {
       overlay = await openedFixture();
     });
 
-    it('overlay open by default', (done) => {
-      overlay.addEventListener('overlay-opened', () => {
-        assert.isTrue(overlay.opened, 'overlay starts opened');
-        assert.notEqual(
-            getComputedStyle(overlay).display, 'none', 'overlay starts showing');
-        done();
-      });
+    it('overlay open by default', async () => {
+      await untilOpen(overlay);
+      assert.isTrue(overlay.opened, 'overlay starts opened');
+      assert.notEqual(getComputedStyle(overlay).display, 'none', 'overlay starts showing');
     });
 
-    it('overlay positioned & sized properly', (done) => {
-      overlay.addEventListener('overlay-opened', () => {
-        const s = getComputedStyle(overlay);
-        assert.closeTo(
-            parseFloat(s.left),
-            (window.innerWidth - overlay.offsetWidth) / 2,
-            1,
-            'centered horizontally');
-        assert.closeTo(
-            parseFloat(s.top),
-            (window.innerHeight - overlay.offsetHeight) / 2,
-            1,
-            'centered vertically');
-        done();
-      });
+    it('overlay positioned & sized properly', async () => {
+      await untilOpen(overlay);
+      const s = getComputedStyle(overlay);
+      assert.closeTo(parseFloat(s.left), (window.innerWidth - overlay.offsetWidth) / 2, 1, 'centered horizontally');
+      assert.closeTo(parseFloat(s.top), (window.innerHeight - overlay.offsetHeight) / 2, 1, 'centered vertically');
     });
   });
 
   describe('focus handling', () => {
-    let overlay;
+    let overlay = /** @type TestOverlay */ (null);
     beforeEach(async () => {
       // Ensure focus is set to document.body
       document.body.focus();
@@ -636,124 +623,108 @@ describe('ArcOverlayMixin', () => {
       await nextFrame();
     });
 
-    it('node with autofocus is focused', (done) => {
-      runAfterOpen(overlay, () => {
-        assert.equal(
-            overlay.querySelector('[autofocus]'),
-            document.activeElement,
-            '<button autofocus> is focused');
-        done();
-      });
+    it('node with autofocus is focused', async () => {
+      await untilOpen(overlay);
+      assert.equal(overlay.querySelector('[autofocus]'), document.activeElement, '<button autofocus> is focused');
     });
 
-    it('no-auto-focus will not focus node with autofocus', (done) => {
+    it('#noAutoFocus will not focus node with autofocus', async () => {
       overlay.noAutoFocus = true;
-      runAfterOpen(overlay, () => {
-        assert.notEqual(
-            overlay.querySelector('[autofocus]'),
-            document.activeElement,
-            '<button autofocus> not focused after opened');
-        done();
-      });
       // In Safari the element with autofocus will immediately receive focus when
       // displayed for the first time http://jsbin.com/woroci/2/ Ensure this is
       // not the case for overlay.
       assert.notEqual(
+        overlay.querySelector('[autofocus]'),
+        document.activeElement,
+        '<button autofocus> not immediately focused');
+      await untilOpen(overlay);
+      assert.notEqual(
           overlay.querySelector('[autofocus]'),
           document.activeElement,
-          '<button autofocus> not immediately focused');
+          '<button autofocus> not focused after opened');
     });
 
-    it('no-cancel-on-outside-click property; focus stays on overlay when click outside', (done) => {
+    it('#noCancelOnOutsideClick property: focus stays on overlay when click outside', async () => {
       overlay.noCancelOnOutsideClick = true;
-      runAfterOpen(overlay, () => {
-        tap(document.body);
-        setTimeout(() => {
-          assert.equal(
-              overlay.querySelector('[autofocus]'),
-              document.activeElement,
-              '<button autofocus> is focused');
-          done();
-        }, 10);
-      });
+      await untilOpen(overlay);
+      tap(document.body);
+
+      await aTimeout(10);
+      assert.equal(
+          overlay.querySelector('[autofocus]'),
+          document.activeElement,
+          '<button autofocus> is focused');
     });
 
-    it('with-backdrop traps the focus within the overlay', (done) => {
+    it('#withBackdrop traps the focus within the overlay', async () => {
       const focusSpy = sinon.stub();
       const button = document.createElement('button');
       document.body.appendChild(button);
       button.addEventListener('focus', focusSpy, true);
       overlay.withBackdrop = true;
-      runAfterOpen(overlay, () => {
-        // Try to steal the focus
-        focus(button);
-        assert.equal(
-            overlay.querySelector('[autofocus]'),
-            document.activeElement,
-            '<button autofocus> is focused');
-        assert.equal(
-            focusSpy.callCount, 0, 'button in body did not get the focus');
-        document.body.removeChild(button);
-        done();
-      });
+      await untilOpen(overlay);
+
+      // Try to steal the focus
+      focus(button);
+      assert.equal(
+          overlay.querySelector('[autofocus]'),
+          document.activeElement,
+          '<button autofocus> is focused');
+      assert.equal(
+          focusSpy.callCount, 0, 'button in body did not get the focus');
+      document.body.removeChild(button);
     });
 
-    it('overlay with-backdrop and 1 focusable: prevent TAB and trap the focus', (done) => {
+    it('overlay #withBackdrop and 1 focusable: prevent TAB and trap the focus', async () => {
       overlay.withBackdrop = true;
-      runAfterOpen(overlay, () => {
-        // 1ms timeout needed by IE10 to have proper focus switching.
-        setTimeout(() => {
-          // Spy keydown.
-          const tabSpy = sinon.spy();
-          document.addEventListener('keydown', tabSpy);
-          // Simulate TAB.
-          // @ts-ignore
-          pressAndReleaseKeyOn(document, 9, '', 'Tab');
-          assert.equal(
-              overlay.querySelector('[autofocus]'),
-              document.activeElement,
-              'focus stays on button');
-          assert.isTrue(tabSpy.calledOnce, 'keydown spy called');
-          assert.isTrue(
-              tabSpy.getCall(0).args[0].defaultPrevented,
-              'keydown default prevented');
-          // Cleanup.
-          document.removeEventListener('keydown', tabSpy);
-          done();
-        }, 1);
-      });
+      await untilOpen(overlay);
+      // 1ms timeout needed by IE10 to have proper focus switching.
+      await aTimeout(1);
+
+      // Spy keydown.
+      const tabSpy = sinon.spy();
+      document.addEventListener('keydown', tabSpy);
+      // Simulate TAB.
+      // @ts-ignore
+      pressAndReleaseKeyOn(document, 9, '', 'Tab');
+      assert.equal(
+          overlay.querySelector('[autofocus]'),
+          document.activeElement,
+          'focus stays on button');
+      assert.isTrue(tabSpy.calledOnce, 'keydown spy called');
+      assert.isTrue(
+          tabSpy.getCall(0).args[0].defaultPrevented,
+          'keydown default prevented');
+      // Cleanup.
+      document.removeEventListener('keydown', tabSpy);
     });
 
-    it('empty overlay with-backdrop: prevent TAB and trap the focus', (done) => {
-      autofocusFixture()
-      .then((el) => {
-        overlay = el;
-        overlay.withBackdrop = true;
-        runAfterOpen(overlay, () => {
-          // 1ms timeout needed by IE10 to have proper focus switching.
-          setTimeout(() => {
-            // Spy keydown.
-            const tabSpy = sinon.spy();
-            document.addEventListener('keydown', tabSpy);
-            // Simulate TAB.
-            // @ts-ignore
-            pressAndReleaseKeyOn(document, 9, '', 'Tab');
-            // Cleanup.
-            document.removeEventListener('keydown', tabSpy);
-            assert.isTrue(overlay.contains(document.activeElement), 'focus stays inside overlay');
-            assert.isTrue(tabSpy.calledOnce, 'keydown spy called');
-            assert.isTrue(
-                tabSpy.getCall(0).args[0].defaultPrevented,
-                'keydown default prevented');
-            done();
-          }, 1);
-        });
-      });
+    it('empty overlay #withBackdrop: prevent TAB and trap the focus', async () => {
+      const el = await autofocusFixture();
+      overlay = el;
+      overlay.withBackdrop = true;
+      await untilOpen(overlay);
+      // 1ms timeout needed by IE10 to have proper focus switching.
+      await aTimeout(1);
+
+      // Spy keydown.
+      const tabSpy = sinon.spy();
+      document.addEventListener('keydown', tabSpy);
+      // Simulate TAB.
+      // @ts-ignore
+      pressAndReleaseKeyOn(document, 9, '', 'Tab');
+      // Cleanup.
+      document.removeEventListener('keydown', tabSpy);
+      assert.isTrue(overlay.contains(document.activeElement), 'focus stays inside overlay');
+      assert.isTrue(tabSpy.calledOnce, 'keydown spy called');
+      assert.isTrue(
+          tabSpy.getCall(0).args[0].defaultPrevented,
+          'keydown default prevented');
     });
   });
 
   describe('focusable nodes', () => {
-    let overlay;
+    let overlay = /** @type TestOverlay */ (null);
     let overlayWithTabIndex;
     let overlayFocusableNodes;
 
@@ -763,238 +734,210 @@ describe('ArcOverlayMixin', () => {
       overlayFocusableNodes = overlayWithTabIndex.nextElementSibling;
     });
 
-    it('_focusableNodes returns nodes that are focusable', (done) => {
-      runAfterOpen(overlay, () => {
-        const focusableNodes = overlay._focusableNodes;
-        assert.equal(focusableNodes.length, 3, '3 nodes are focusable');
-        assert.equal(
-            focusableNodes[0], overlay.querySelector('.focusable1'));
-        assert.equal(
-            focusableNodes[1], overlay.querySelector('.focusable2'));
-        assert.equal(
-            focusableNodes[2], overlay.querySelector('.focusable3'));
-        done();
-      });
+    it('_focusableNodes returns nodes that are focusable', async () => {
+      await untilOpen(overlay);
+      const focusableNodes = overlay._focusableNodes;
+      assert.equal(focusableNodes.length, 3, '3 nodes are focusable');
+      assert.equal(
+          focusableNodes[0], overlay.querySelector('.focusable1'));
+      assert.equal(
+          focusableNodes[1], overlay.querySelector('.focusable2'));
+      assert.equal(
+          focusableNodes[2], overlay.querySelector('.focusable3'));
     });
 
-    it('_focusableNodes includes overlay if it has a valid tabindex', (done) => {
-      runAfterOpen(overlay, () => {
-        overlay.setAttribute('tabindex', '0');
-        const focusableNodes = overlay._focusableNodes;
-        assert.equal(focusableNodes.length, 4, '4 focusable nodes');
-        assert.notEqual(
-            focusableNodes.indexOf(overlay), -1, 'overlay is included');
-        done();
-      });
+    it('_focusableNodes includes overlay if it has a valid tabindex', async () => {
+      await untilOpen(overlay);
+      overlay.setAttribute('tabindex', '0');
+      const focusableNodes = overlay._focusableNodes;
+      assert.equal(focusableNodes.length, 4, '4 focusable nodes');
+      assert.notEqual(
+          focusableNodes.indexOf(overlay), -1, 'overlay is included');
     });
 
-    it('_focusableNodes respects the tabindex order', (done) => {
-      runAfterOpen(overlayWithTabIndex, () => {
-        const focusableNodes = overlayWithTabIndex._focusableNodes;
-        assert.equal(focusableNodes.length, 6, '6 nodes are focusable');
-        assert.equal(
-            focusableNodes[0],
-            overlayWithTabIndex.querySelector('.focusable1'));
-        assert.equal(
-            focusableNodes[1],
-            overlayWithTabIndex.querySelector('.focusable2'));
-        assert.equal(
-            focusableNodes[2],
-            overlayWithTabIndex.querySelector('.focusable3'));
-        assert.equal(
-            focusableNodes[3],
-            overlayWithTabIndex.querySelector('.focusable4'));
-        assert.equal(
-            focusableNodes[4],
-            overlayWithTabIndex.querySelector('.focusable5'));
-        assert.equal(
-            focusableNodes[5],
-            overlayWithTabIndex.querySelector('.focusable6'));
-        done();
-      });
+    it('_focusableNodes respects the tabindex order', async () => {
+      await untilOpen(overlayWithTabIndex);
+
+      const focusableNodes = overlayWithTabIndex._focusableNodes;
+      assert.equal(focusableNodes.length, 6, '6 nodes are focusable');
+      assert.equal(
+          focusableNodes[0],
+          overlayWithTabIndex.querySelector('.focusable1'));
+      assert.equal(
+          focusableNodes[1],
+          overlayWithTabIndex.querySelector('.focusable2'));
+      assert.equal(
+          focusableNodes[2],
+          overlayWithTabIndex.querySelector('.focusable3'));
+      assert.equal(
+          focusableNodes[3],
+          overlayWithTabIndex.querySelector('.focusable4'));
+      assert.equal(
+          focusableNodes[4],
+          overlayWithTabIndex.querySelector('.focusable5'));
+      assert.equal(
+          focusableNodes[5],
+          overlayWithTabIndex.querySelector('.focusable6'));
     });
 
-    it('_focusableNodes can be overridden', (done) => {
-      runAfterOpen(overlayFocusableNodes, () => {
-        // It has 1 focusable in the light dom, and 2 in the shadow dom.
-        const focusableNodes = overlayFocusableNodes._focusableNodes;
-        assert.equal(focusableNodes.length, 2, 'length ok');
-        assert.equal(
-            focusableNodes[0], overlayFocusableNodes.shadowRoot.querySelector('#first'), 'first ok');
-        assert.equal(focusableNodes[1], overlayFocusableNodes.shadowRoot.querySelector('#last'), 'last ok');
-        done();
-      });
+    it('_focusableNodes can be overridden', async () => {
+      await untilOpen(overlayFocusableNodes);
+      // It has 1 focusable in the light dom, and 2 in the shadow dom.
+      const focusableNodes = overlayFocusableNodes._focusableNodes;
+      assert.equal(focusableNodes.length, 2, 'length ok');
+      assert.equal(
+          focusableNodes[0], overlayFocusableNodes.shadowRoot.querySelector('#first'), 'first ok');
+      assert.equal(focusableNodes[1], overlayFocusableNodes.shadowRoot.querySelector('#last'), 'last ok');
     });
 
-    it('with-backdrop: TAB & Shift+TAB wrap focus', (done) => {
+    it('with-backdrop: TAB & Shift+TAB wrap focus', async () => {
       overlay.withBackdrop = true;
-      runAfterOpen(overlay, () => {
-        const focusableNodes = overlay._focusableNodes;
-        // 1ms timeout needed by IE10 to have proper focus switching.
-        setTimeout(() => {
-          // Go to last element.
-          focusableNodes[focusableNodes.length - 1].focus();
-          // Spy keydown.
-          const tabSpy = sinon.spy();
-          document.addEventListener('keydown', tabSpy);
-          // Simulate TAB.
-          // @ts-ignore
-          pressAndReleaseKeyOn(document, 9, '', 'Tab');
-          assert.equal(
-              focusableNodes[0],
-              document.activeElement,
-              'focus wrapped to first focusable');
-          assert.isTrue(tabSpy.calledOnce, 'keydown spy called');
-          assert.isTrue(
-              tabSpy.getCall(0).args[0].defaultPrevented,
-              'keydown default prevented');
-          // Simulate Shift+TAB.
-          // @ts-ignore
-          pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
-          assert.equal(
-              focusableNodes[focusableNodes.length - 1],
-              document.activeElement,
-              'focus wrapped to last focusable');
-          assert.isTrue(tabSpy.calledTwice, 'keydown spy called again');
-          assert.isTrue(
-              tabSpy.getCall(1).args[0].defaultPrevented,
-              'keydown default prevented again');
-          // Cleanup.
-          document.removeEventListener('keydown', tabSpy);
-          done();
-        }, 1);
-      });
+      await untilOpen(overlay);
+      const focusableNodes = overlay._focusableNodes;
+      // 1ms timeout needed by IE10 to have proper focus switching.
+      await aTimeout(1);
+      // Go to last element.
+      focusableNodes[focusableNodes.length - 1].focus();
+      // Spy keydown.
+      const tabSpy = sinon.spy();
+      document.addEventListener('keydown', tabSpy);
+      // Simulate TAB.
+      // @ts-ignore
+      pressAndReleaseKeyOn(document, 9, '', 'Tab');
+      assert.equal(
+          focusableNodes[0],
+          document.activeElement,
+          'focus wrapped to first focusable');
+      assert.isTrue(tabSpy.calledOnce, 'keydown spy called');
+      assert.isTrue(
+          tabSpy.getCall(0).args[0].defaultPrevented,
+          'keydown default prevented');
+      // Simulate Shift+TAB.
+      // @ts-ignore
+      pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
+      assert.equal(
+          focusableNodes[focusableNodes.length - 1],
+          document.activeElement,
+          'focus wrapped to last focusable');
+      assert.isTrue(tabSpy.calledTwice, 'keydown spy called again');
+      assert.isTrue(
+          tabSpy.getCall(1).args[0].defaultPrevented,
+          'keydown default prevented again');
+      // Cleanup.
+      document.removeEventListener('keydown', tabSpy);
     });
 
-    it('with-backdrop: TAB & Shift+TAB wrap focus respecting tabindex', (done) => {
+    it('with-backdrop: TAB & Shift+TAB wrap focus respecting tabindex', async () => {
       overlayWithTabIndex.withBackdrop = true;
-      runAfterOpen(overlayWithTabIndex, () => {
-        const focusableNodes = overlayWithTabIndex._focusableNodes;
-        // 1ms timeout needed by IE10 to have proper focus switching.
-        setTimeout(() => {
-          // Go to last element.
-          focusableNodes[focusableNodes.length - 1].focus();
-          // Simulate TAB.
-          // @ts-ignore
-          pressAndReleaseKeyOn(document, 9, '', 'Tab');
-          assert.equal(
-              focusableNodes[0],
-              document.activeElement,
-              'focus wrapped to first focusable');
-          // Simulate Shift+TAB.
-          // @ts-ignore
-          pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
-          assert.equal(
-              focusableNodes[focusableNodes.length - 1],
-              document.activeElement,
-              'focus wrapped to last focusable');
-          done();
-        }, 1);
-      });
+      await untilOpen(overlayWithTabIndex);
+      const focusableNodes = overlayWithTabIndex._focusableNodes;
+      // 1ms timeout needed by IE10 to have proper focus switching.
+      await aTimeout(1);
+      // Go to last element.
+      focusableNodes[focusableNodes.length - 1].focus();
+      // Simulate TAB.
+      // @ts-ignore
+      pressAndReleaseKeyOn(document, 9, '', 'Tab');
+      assert.equal(
+          focusableNodes[0],
+          document.activeElement,
+          'focus wrapped to first focusable');
+      // Simulate Shift+TAB.
+      // @ts-ignore
+      pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
+      assert.equal(
+          focusableNodes[focusableNodes.length - 1],
+          document.activeElement,
+          'focus wrapped to last focusable');
     });
 
-    it('with-backdrop: Shift+TAB after open wrap focus', (done) => {
+    it('with-backdrop: Shift+TAB after open wrap focus', async () => {
       overlay.withBackdrop = true;
-      runAfterOpen(overlay, () => {
-        const focusableNodes = overlay._focusableNodes;
-        // 1ms timeout needed by IE10 to have proper focus switching.
-        setTimeout(() => {
-          // Spy keydown.
-          const tabSpy = sinon.spy();
-          document.addEventListener('keydown', tabSpy);
-          // Simulate Shift+TAB.
-          // @ts-ignore
-          pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
-          assert.equal(
-              focusableNodes[focusableNodes.length - 1],
-              document.activeElement,
-              'focus wrapped to last focusable');
-          assert.isTrue(tabSpy.calledOnce, 'keydown spy called');
-          assert.isTrue(
-              tabSpy.getCall(0).args[0].defaultPrevented,
-              'keydown default prevented');
-          // Cleanup.
-          document.removeEventListener('keydown', tabSpy);
-          done();
-        }, 1);
-      });
+      await untilOpen(overlay);
+      const focusableNodes = overlay._focusableNodes;
+      // 1ms timeout needed by IE10 to have proper focus switching.
+      await aTimeout(1);
+      // Spy keydown.
+      const tabSpy = sinon.spy();
+      document.addEventListener('keydown', tabSpy);
+      // Simulate Shift+TAB.
+      // @ts-ignore
+      pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
+      assert.equal(
+          focusableNodes[focusableNodes.length - 1],
+          document.activeElement,
+          'focus wrapped to last focusable');
+      assert.isTrue(tabSpy.calledOnce, 'keydown spy called');
+      assert.isTrue(
+          tabSpy.getCall(0).args[0].defaultPrevented,
+          'keydown default prevented');
+      // Cleanup.
+      document.removeEventListener('keydown', tabSpy);
     });
 
-    it('with-backdrop: after open, update last focusable node and then Shift+TAB', (done) => {
+    it('with-backdrop: after open, update last focusable node and then Shift+TAB', async () => {
       overlay.withBackdrop = true;
-      runAfterOpen(overlay, () => {
-        const focusableNodes = overlay._focusableNodes;
-        // 1ms timeout needed by IE10 to have proper focus switching.
-        setTimeout(() => {
-          // Before tabbing, make lastFocusable non-tabbable. This will make
-          // the one before it (focusableNodes.length - 2), the new last
-          // focusable node.
-          focusableNodes[focusableNodes.length - 1].setAttribute(
-              'tabindex', '-1');
-          overlay.invalidateTabbables();
-          // Simulate Shift+TAB.
-          // @ts-ignore
-          pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
-          assert.equal(
-              focusableNodes[focusableNodes.length - 2],
-              document.activeElement,
-              'focus wrapped correctly');
-          done();
-        }, 1);
-      });
+      await untilOpen(overlay);
+      const focusableNodes = overlay._focusableNodes;
+      // 1ms timeout needed by IE10 to have proper focus switching.
+      await aTimeout(1);
+      // Before tabbing, make lastFocusable non-tabbable. This will make
+      // the one before it (focusableNodes.length - 2), the new last
+      // focusable node.
+      focusableNodes[focusableNodes.length - 1].setAttribute(
+          'tabindex', '-1');
+      overlay.invalidateTabbables();
+      // Simulate Shift+TAB.
+      // @ts-ignore
+      pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
+      assert.equal(
+          focusableNodes[focusableNodes.length - 2],
+          document.activeElement,
+          'focus wrapped correctly');
     });
 
-    it('with-backdrop: Shift+TAB wrap focus in shadowDOM', (done) => {
+    it('with-backdrop: Shift+TAB wrap focus in shadowDOM', async () => {
       overlayFocusableNodes.withBackdrop = true;
-      runAfterOpen(overlayFocusableNodes, () => {
-        // 1ms timeout needed by IE10 to have proper focus switching.
-        setTimeout(() => {
-          // Spy keydown.
-          const tabSpy = sinon.spy();
-          document.addEventListener('keydown', tabSpy);
-          // Simulate Shift+TAB.
-          // @ts-ignore
-          pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
-          assert.equal(
-              overlayFocusableNodes.shadowRoot.querySelector('#last'),
-              ArcOverlayManager.deepActiveElement,
-              'focus wrapped to last focusable in the shadowDOM');
-          assert.isTrue(tabSpy.calledOnce, 'keydown spy called');
-          assert.isTrue(
-              tabSpy.getCall(0).args[0].defaultPrevented,
-              'keydown default prevented');
-          // Cleanup.
-          document.removeEventListener('keydown', tabSpy);
-          done();
-        }, 1);
-      });
+      await untilOpen(overlayFocusableNodes);
+      // 1ms timeout needed by IE10 to have proper focus switching.
+      await aTimeout(1);
+      // Spy keydown.
+      const tabSpy = sinon.spy();
+      document.addEventListener('keydown', tabSpy);
+      // Simulate Shift+TAB.
+      // @ts-ignore
+      pressAndReleaseKeyOn(document, 9, ['shift'], 'Tab');
+      assert.equal(
+          overlayFocusableNodes.shadowRoot.querySelector('#last'),
+          ArcOverlayManager.deepActiveElement,
+          'focus wrapped to last focusable in the shadowDOM');
+      assert.isTrue(tabSpy.calledOnce, 'keydown spy called');
+      assert.isTrue(
+          tabSpy.getCall(0).args[0].defaultPrevented,
+          'keydown default prevented');
+      // Cleanup.
+      document.removeEventListener('keydown', tabSpy);
     });
-    const testName =
-        'with-backdrop: __firstFocusableNode and __lastFocusableNode are ' +
-        'updated after pressing tab.';
-    it(testName, (done) => {
+
+    it('#withBackdrop: __firstFocusableNode and __lastFocusableNode are updated after pressing tab.', async () => {
       const TAB = 9;
-      backdropFixture()
-      .then((overlay) => {
-        const inputs = overlay.querySelectorAll('input');
-        runAfterOpen(overlay, () => {
-          // @ts-ignore
-          pressAndReleaseKeyOn(document, TAB, '', 'Tab');
-          // @ts-ignore
-          assert.equal(overlay.__firstFocusableNode, inputs[1]);
-          // @ts-ignore
-          assert.equal(overlay.__lastFocusableNode, inputs[1]);
-          inputs[0].removeAttribute('disabled');
-          inputs[2].removeAttribute('disabled');
-          // @ts-ignore
-          pressAndReleaseKeyOn(document, TAB, '', 'Tab');
-          // @ts-ignore
-          assert.equal(overlay.__firstFocusableNode, inputs[0]);
-          // @ts-ignore
-          assert.equal(overlay.__lastFocusableNode, inputs[2]);
-          done();
-        });
-      });
+      overlay = await backdropFixture();
+      const inputs = overlay.querySelectorAll('input');
+      await untilOpen(overlay);
+      // @ts-ignore
+      pressAndReleaseKeyOn(document, TAB, '', 'Tab');
+      // @ts-ignore
+      assert.equal(overlay.__firstFocusableNode, inputs[1]);
+      // @ts-ignore
+      assert.equal(overlay.__lastFocusableNode, inputs[1]);
+      inputs[0].removeAttribute('disabled');
+      inputs[2].removeAttribute('disabled');
+      // @ts-ignore
+      pressAndReleaseKeyOn(document, TAB, '', 'Tab');
+      // @ts-ignore
+      assert.equal(overlay.__firstFocusableNode, inputs[0]);
+      // @ts-ignore
+      assert.equal(overlay.__lastFocusableNode, inputs[2]);
     });
   });
 
