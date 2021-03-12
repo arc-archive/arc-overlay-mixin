@@ -71,7 +71,13 @@ export declare interface ArcOverlayMixinConstructor {
  * @fires closed Dispatched after the element is rendered closed
  * @fires cancel Dispatched when element is about to be closed. Cancelling the event stops the closing.
  * @fires openedchange When the `opened` property changed.
- * 
+ * @fires overlay-canceled Deprecated
+ * @fires iron-overlay-canceled Deprecated
+ * @fires overlay-opened Deprecated
+ * @fires iron-overlay-opened Deprecated
+ * @fires overlay-closed Deprecated
+ * @fires iron-overlay-closed Deprecated
+ * @fires opened-changed Deprecated
  */
 export declare interface ArcOverlayMixin extends ArcFitMixin, ArcResizableMixin {
   /**
