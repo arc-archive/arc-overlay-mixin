@@ -1,8 +1,8 @@
+# ArcOverlayMixin
+
 [![Published on NPM](https://img.shields.io/npm/v/@advanced-rest-client/arc-overlay-mixin.svg)](https://www.npmjs.com/package/@advanced-rest-client/arc-overlay-mixin)
 
-[![Build Status](https://travis-ci.com/advanced-rest-client/arc-overlay-mixin.svg)](https://travis-ci.com/advanced-rest-client/arc-overlay-mixin)
-
-[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/advanced-rest-client/arc-overlay-mixin)
+[![Tests and publishing](https://github.com/advanced-rest-client/arc-overlay-mixin/actions/workflows/deployment.yml/badge.svg)](https://github.com/advanced-rest-client/arc-overlay-mixin/actions/workflows/deployment.yml)
 
 This mixin is a port of [iron-overlay-behavior](https://github.com/PolymerElements/iron-overlay-behavior)
 that works with LitElement.
@@ -14,6 +14,29 @@ dialogs and drop downs. Multiple overlays may be displayed at once.
 
 See the [demo source code](https://github.com/advanced-rest-client/arc-overlay-mixin/blob/master/demo/simple-overlay.html)
 for an example.
+
+## Usage
+
+### Installation
+
+```sh
+npm i @advanced-rest-client/arc-overlay-mixin
+```
+
+### Example
+
+```javascript
+import { LitElement } from 'lit-element';
+import { ArcOverlayMixin } from '@advanced-rest-client/arc-overlay-mixin';
+
+class ArcOverlayImpl extends ArcOverlayMixin(LitElement) {
+  static get properties() {
+    return {
+      myProp: { type: String }
+    };
+  }
+}
+```
 
 ### Closing and canceling
 
@@ -48,40 +71,15 @@ The element is styled to appear on top of other content by setting its
 higher `z-index` than its parent stacking context. You should place this
 element as a child of `<body>` whenever possible.
 
-## Installation
+## Development
 
-```bash
-npm i @advanced-rest-client/arc-overlay-mixin
-```
-
-## Usage
-
-```javascript
-import { LitElement } from 'lit-element';
-import { ArcOverlayMixin } from '@advanced-rest-client/arc-overlay-mixin';
-
-class ArcOverlayImpl extends ArcOverlayMixin(LitElement) {
-  static get properties() {
-    return {
-      myProp: { type: String }
-    };
-  }
-}
-```
-
-## Testing
+### Testing
 
 ```bash
 npm run test
 ```
 
-## Testing with Sauce Labs
-
-```bash
-npm run test:sl
-```
-
-## Demo
+### Demo
 
 ```bash
 npm start

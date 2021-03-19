@@ -969,11 +969,11 @@ const mxFunction = base => {
       if (rafs[jobName] !== null) {
         cancelAnimationFrame(rafs[jobName]);
       }
-      rafs[jobName] = requestAnimationFrame(function nextAnimationFrame() {
+      rafs[jobName] = requestAnimationFrame(() => {
         rafs[jobName] = null;
         // @ts-ignore
         callback.call(this);
-      }.bind(this));
+      });
     }
 
     /**
