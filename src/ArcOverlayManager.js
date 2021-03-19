@@ -347,6 +347,10 @@ export class ArcOverlayManager {
     // Check if clicked outside of overlay.
     while ((overlay = /** @type {?} */ (this._overlays[i])) &&
            this._overlayInPath(path) !== overlay) {
+      if (this._clickIsInsideOverlay(e, overlay)) {
+        i--;
+        continue
+      }
       overlay._onCaptureClick(e);
       if (overlay.allowClickThrough) {
         i--;
@@ -354,6 +358,15 @@ export class ArcOverlayManager {
         break;
       }
     }
+  }
+
+  _clickIsInsideOverlay(clickEvent, element) {
+    const { clientX, clientY } = clickEvent;
+    const { top, left, right, bottom} = element.getBoundingClientRect();
+    if (clientX < left || clientX > right || clientY < top || clientY > bottom) {
+      return false;
+    }
+    return true;
   }
 
   /**
