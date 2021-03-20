@@ -1875,6 +1875,45 @@ describe('ArcOverlayMixin', () => {
     });
   });
 
+
+  describe('_clickIsInsideOverlay()', () => {
+    let element;
+
+    beforeEach(async () => {
+      element = await basicFixture();
+    });
+
+    it('should return false if clientX is too far left of bounds', () => {
+      const clickEvent = { clientX: 550, clientY: 450 };
+      const overlay = { getBoundingClientRect: () => ({ left: 600, right: 700, bottom: 500, top: 400 }) };
+      assert.isFalse(element._manager._clickIsInsideOverlay(clickEvent, overlay));
+    });
+
+    it('should return false if clientX is too far right of bounds', () => {
+      const clickEvent = { clientX: 750, clientY: 450 };
+      const overlay = { getBoundingClientRect: () => ({ left: 600, right: 700, bottom: 500, top: 400 }) };
+      assert.isFalse(element._manager._clickIsInsideOverlay(clickEvent, overlay));
+    });
+
+    it('should return false if clientY is too far up of bounds', () => {
+      const clickEvent = { clientX: 650, clientY: 350 };
+      const overlay = { getBoundingClientRect: () => ({ left: 600, right: 700, bottom: 500, top: 400 }) };
+      assert.isFalse(element._manager._clickIsInsideOverlay(clickEvent, overlay));
+    });
+
+    it('should return false if clientY is too far down of bounds', () => {
+      const clickEvent = { clientX: 650, clientY: 550 };
+      const overlay = { getBoundingClientRect: () => ({ left: 600, right: 700, bottom: 500, top: 400 }) };
+      assert.isFalse(element._manager._clickIsInsideOverlay(clickEvent, overlay));
+    });
+
+    it('should return true when clientX and clientY are in bounds', () => {
+      const clickEvent = { clientX: 650, clientY: 450 };
+      const overlay = { getBoundingClientRect: () => ({ left: 600, right: 700, bottom: 500, top: 400 }) };
+      assert.isTrue(element._manager._clickIsInsideOverlay(clickEvent, overlay));
+    });
+  });
+
   describe('a11y', () => {
     it('overlay has aria-hidden=true when opened', async () => {
       const overlay = await basicFixture();
