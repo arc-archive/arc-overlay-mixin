@@ -78,6 +78,7 @@ export declare interface ArcOverlayMixinConstructor {
  * @fires overlay-closed Deprecated
  * @fires iron-overlay-closed Deprecated
  * @fires opened-changed Deprecated
+ * @deprecated Use the `@anypoint-web-components/awc` module instead.
  */
 export declare interface ArcOverlayMixin extends ArcFitMixin, ArcResizableMixin {
   /**
